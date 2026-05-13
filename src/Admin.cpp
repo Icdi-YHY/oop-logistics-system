@@ -3,7 +3,7 @@
 Admin::Admin(const std::string &username,
              const std::string &name,
              const std::string &password,
-             double balance) :username_(username),
+             const double &balance) :username_(username),
                                name_(name),
                                password_(password),
                                balance_(balance)

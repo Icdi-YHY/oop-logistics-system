@@ -15,7 +15,7 @@ public:
     Admin(const std::string &username,
           const std::string &name,
           const std::string &password,
-          double balance);
+          const double &balance);
 
     // Getter方法
     std::string GetUsername() const;
