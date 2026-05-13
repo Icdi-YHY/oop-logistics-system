@@ -28,6 +28,7 @@ public:
     std::string GetPhonenum() const;
     double GetBalance() const;
     std::string GetAddress() const;
+    std::string GetPassword() const;
 
     // 检查密码是否相同
     bool CheckPassword(const std::string &pwd) const;

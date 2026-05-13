@@ -3,10 +3,10 @@
 Admin::Admin(const std::string &username,
              const std::string &name,
              const std::string &password,
-             const double &balance) :username_(username),
-                               name_(name),
-                               password_(password),
-                               balance_(balance)
+             const double &balance) : username_(username),
+                                      name_(name),
+                                      password_(password),
+                                      balance_(balance)
 {
 }
 
@@ -24,6 +24,10 @@ std::string Admin ::GetName() const
 double Admin ::GetBalance() const
 {
     return balance_;
+}
+std::string Admin::GetPassword() const
+{
+    return password_;
 }
 
 // 检查密码是否相同

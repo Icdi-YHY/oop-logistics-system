@@ -21,7 +21,8 @@ public:
     std::string GetUsername() const;
     std::string GetName() const;
     double GetBalance() const;
-
+    std::string GetPassword() const;
+    
     // 检查密码是否相同
     bool CheckPassword(const std::string &pwd) const;
 

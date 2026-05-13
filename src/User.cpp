@@ -36,6 +36,10 @@ std::string User::GetAddress() const
 {
     return address_;
 }
+std::string User::GetPassword() const
+{
+    return password_;
+}
 
 // 检查密码是否相同
 bool User::CheckPassword(const std::string &pwd) const
