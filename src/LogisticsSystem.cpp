@@ -273,6 +273,7 @@ void LogisticsSystem::userMenu()
             std::cout << "密码修改成功！\n";
             break;
         }
+        case 2:
             std::cout << "当前余额: " << currentUser_->GetBalance() << " 元\n";
             break;
         case 3:
@@ -552,7 +553,7 @@ void LogisticsSystem::receivePackage()
     // 5. 保存数据
     saveData();
 
-    std::cout << "签收完成！\n";
+    std::cout << "退出签收！\n";
 }
 void LogisticsSystem::queryPackages() const
 {
