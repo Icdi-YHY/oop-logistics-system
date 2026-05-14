@@ -11,17 +11,17 @@ Admin::Admin(const std::string &username,
 }
 
 // Getter方法
-std::string Admin ::GetUsername() const
+std::string Admin::GetUsername() const
 {
     return username_;
 }
 
-std::string Admin ::GetName() const
+std::string Admin::GetName() const
 {
     return name_;
 }
 
-double Admin ::GetBalance() const
+double Admin::GetBalance() const
 {
     return balance_;
 }
@@ -51,13 +51,3 @@ void Admin ::AddBalance(double amount)
     }
 }
 
-// 查看所有用户
-void Admin ::ViewAllUsers() const
-{
-}
-
-// 查看所有快递
-void Admin ::ViewAllPackages() const {}
-
-// 按条件查询快递
-void Admin ::QueryPackage() const {}

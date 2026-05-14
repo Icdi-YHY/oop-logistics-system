@@ -31,7 +31,7 @@ std::string LogisticsSystem::generatePackageId()
     return std::to_string(nextPackageId_++);
 }
 // 辅助函数：打印快递信息
-void printPackage(const Package &pkg)
+void LogisticsSystem::printPackage(const Package &pkg) const
 {
     std::cout << "----------------------------\n";
     std::cout << "快递单号: " << pkg.GetId() << "\n";
@@ -575,7 +575,7 @@ void LogisticsSystem::queryPackages() const
         {
             if (pkg.GetSender() == currentUser_->GetUsername())
             {
-                printPackage(pkg);
+                 printPackage(pkg);
                 found = true;
             }
         }

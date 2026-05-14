@@ -3,12 +3,11 @@
 - [x] 创建目录结构
 - [x] User.h
 - [x] User.cpp
-- [ ] Admin.h
-- [ ] Admin.cpp
-- [ ] Package.h
-- [ ] Package.cpp
-- [ ] LogisticsSystem.h
-- [ ] LogisticsSystem.cpp
-- [ ] main.cpp
-- [ ] 编译测试
-- [ ] 提交 GitHub
+- [x] Admin.h
+- [x] Admin.cpp
+- [x] Package.h
+- [x] Package.cpp
+- [x] LogisticsSystem.h
+- [x] LogisticsSystem.cpp
+- [x] main.cpp
+- [x] 编译测试

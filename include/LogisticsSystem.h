@@ -19,6 +19,7 @@ private:
     // 辅助方法
     User *findUser(const std::string &username);
     std::string generatePackageId();
+    void printPackage(const Package &pkg) const;
 
 public:
     // 构造函数

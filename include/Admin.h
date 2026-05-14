@@ -22,20 +22,12 @@ public:
     std::string GetName() const;
     double GetBalance() const;
     std::string GetPassword() const;
-    
+
     // 检查密码是否相同
     bool CheckPassword(const std::string &pwd) const;
 
     // 修改密码
     void SetPassword(const std::string &newpwd);
-    // 查看所有用户
-    void ViewAllUsers() const;
-
-    // 查看所有快递
-    void ViewAllPackages() const;
-
-    // 按条件查询快递
-    void QueryPackage() const;
 
     // 增加公司余额（收到快递费时调用）
     void AddBalance(double amount);
