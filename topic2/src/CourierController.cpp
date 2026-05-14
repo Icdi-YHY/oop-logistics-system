@@ -1,7 +1,7 @@
 #include "../include/CourierController.h"
 #include <iostream>
 
-CourierController::CourierController(DataManager& dm)
+CourierController::CourierController(DataManager &dm)
     : dataManager_(dm), currentCourier_(nullptr)
 {
 }
@@ -13,10 +13,17 @@ bool CourierController::login()
     std::cout << "\n========== 快递员登录 ==========\n";
     std::cout << "快递员ID: ";
     std::cin >> id;
+    while (std::cin.fail())
+    {
+        std::cin.clear();             // 1. 清除错误标志
+        std::cin.ignore(10000, '\n'); // 清空缓冲区
+        std::cout << "请输入快递员ID：";
+        std::cin >> id;
+    }
     std::cout << "密码: ";
     std::cin >> password;
 
-    Courier* courier = dataManager_.findCourier(id);
+    Courier *courier = dataManager_.findCourier(id);
     if (courier == nullptr)
     {
         std::cout << "快递员不存在\n";
@@ -40,11 +47,12 @@ void CourierController::logout()
 
 void CourierController::showMyTasks()
 {
-    if (currentCourier_ == nullptr) return;
-    
+    if (currentCourier_ == nullptr)
+        return;
+
     std::cout << "\n我的待揽收任务:\n";
     bool found = false;
-    for (const auto& pkg : dataManager_.getPackages())
+    for (const auto &pkg : dataManager_.getPackages())
     {
         if (pkg->GetCourierId() == currentCourier_->GetId() && pkg->IsWaitingCollect())
         {
@@ -60,9 +68,10 @@ void CourierController::showMyTasks()
 
 void CourierController::collectPackage()
 {
-    if (currentCourier_ == nullptr) return;
-    
-    std::vector<Package*> myTasks;
+    if (currentCourier_ == nullptr)
+        return;
+
+    std::vector<Package *> myTasks;
     for (auto pkg : dataManager_.getPackages())
     {
         if (pkg->GetCourierId() == currentCourier_->GetId() && pkg->IsWaitingCollect())
@@ -70,13 +79,13 @@ void CourierController::collectPackage()
             myTasks.push_back(pkg);
         }
     }
-    
+
     if (myTasks.empty())
     {
         std::cout << "没有待揽收任务\n";
         return;
     }
-    
+
     std::cout << "\n待揽收任务:\n";
     for (size_t i = 0; i < myTasks.size(); i++)
     {
@@ -84,36 +93,37 @@ void CourierController::collectPackage()
                   << " | 寄件人: " << myTasks[i]->GetSender()
                   << " | 收件人: " << myTasks[i]->GetReceiver() << "\n";
     }
-    
+
     std::vector<int> selected;
     std::cout << "请输入要揽收的编号（多个用空格隔开，回车结束）: ";
     int num;
     while (std::cin >> num)
     {
         selected.push_back(num);
-        if (std::cin.get() == '\n') break;
+        if (std::cin.get() == '\n')
+            break;
     }
-    
-    Admin& admin = dataManager_.getAdmin();
+
+    Admin &admin = dataManager_.getAdmin();
     double totalCommission = 0;
-    
+
     for (int idx : selected)
     {
         if (idx >= 0 && idx < (int)myTasks.size())
         {
-            Package* pkg = myTasks[idx];
+            Package *pkg = myTasks[idx];
             double price = pkg->GetPrice();
             double commission = price * 0.5;
-            
+
             admin.DeductBalance(commission);
             currentCourier_->AddEarnings(commission);
-            pkg->SetStatus(1);  // 待揽收 -> 待签收
+            pkg->SetStatus(1); // 待揽收 -> 待签收
             totalCommission += commission;
-            
+
             std::cout << "已揽收: " << pkg->GetId() << " 佣金: " << commission << " 元\n";
         }
     }
-    
+
     dataManager_.saveData();
     std::cout << "揽收完成！总佣金: " << totalCommission << " 元\n";
     std::cout << "当前余额: " << currentCourier_->GetBalance() << " 元\n";
@@ -121,11 +131,12 @@ void CourierController::collectPackage()
 
 void CourierController::queryMyRecords()
 {
-    if (currentCourier_ == nullptr) return;
-    
+    if (currentCourier_ == nullptr)
+        return;
+
     std::cout << "\n我的揽收记录:\n";
     bool found = false;
-    for (const auto& pkg : dataManager_.getPackages())
+    for (const auto &pkg : dataManager_.getPackages())
     {
         if (pkg->GetCourierId() == currentCourier_->GetId())
         {
@@ -141,18 +152,19 @@ void CourierController::queryMyRecords()
 
 void CourierController::changePassword()
 {
-    if (currentCourier_ == nullptr) return;
-    
+    if (currentCourier_ == nullptr)
+        return;
+
     std::string oldPwd, newPwd;
     std::cout << "原密码: ";
     std::cin >> oldPwd;
-    
+
     if (!currentCourier_->CheckPassword(oldPwd))
     {
         std::cout << "原密码错误\n";
         return;
     }
-    
+
     std::cout << "新密码: ";
     std::cin >> newPwd;
     currentCourier_->SetPassword(newPwd);
@@ -162,14 +174,16 @@ void CourierController::changePassword()
 
 void CourierController::showBalance()
 {
-    if (currentCourier_ == nullptr) return;
+    if (currentCourier_ == nullptr)
+        return;
     std::cout << "当前余额: " << currentCourier_->GetBalance() << " 元\n";
 }
 
 void CourierController::showMenu()
 {
-    if (currentCourier_ == nullptr) return;
-    
+    if (currentCourier_ == nullptr)
+        return;
+
     int choice;
     while (true)
     {
@@ -209,5 +223,5 @@ void CourierController::showMenu()
     }
 }
 
-Courier* CourierController::getCurrentCourier() const { return currentCourier_; }
+Courier *CourierController::getCurrentCourier() const { return currentCourier_; }
 bool CourierController::isLoggedIn() const { return currentCourier_ != nullptr; }

@@ -4,7 +4,7 @@
 #include "../include/NormalPackage.h"
 #include <iostream>
 #include <ctime>
-UserController::UserController(DataManager& dm)
+UserController::UserController(DataManager &dm)
     : dataManager_(dm), currentUser_(nullptr)
 {
 }
@@ -18,10 +18,10 @@ bool UserController::login()
     std::cout << "密码: ";
     std::cin >> password;
 
-    User* user = dataManager_.findUser(username);
+    User *user = dataManager_.findUser(username);
     if (user == nullptr)
     {
-        std::cout << "用户名不存在\n";
+        std::cout << "用户名不存在！\n";
         return false;
     }
     if (!user->CheckPassword(password))
@@ -46,13 +46,12 @@ void UserController::registerUser()
     std::cout << "\n========== 用户注册 ==========\n";
     std::cout << "用户名: ";
     std::cin >> username;
-    
+
     if (dataManager_.findUser(username) != nullptr)
     {
         std::cout << "用户名已存在\n";
-        return;
     }
-    
+
     std::cout << "姓名: ";
     std::cin >> name;
     std::cout << "密码: ";
@@ -65,23 +64,24 @@ void UserController::registerUser()
     User newUser(username, name, phonenum, password, address);
     dataManager_.addUser(newUser);
     dataManager_.saveData();
-    std::cout << "注册成功！\n";
+    std::cout << "注册成功！请登入。\n";
 }
 
 void UserController::changePassword()
 {
-    if (currentUser_ == nullptr) return;
-    
+    if (currentUser_ == nullptr)
+        return;
+
     std::string oldPwd, newPwd;
     std::cout << "原密码: ";
     std::cin >> oldPwd;
-    
+
     if (!currentUser_->CheckPassword(oldPwd))
     {
         std::cout << "原密码错误\n";
         return;
     }
-    
+
     std::cout << "新密码: ";
     std::cin >> newPwd;
     currentUser_->SetPassword(newPwd);
@@ -91,8 +91,9 @@ void UserController::changePassword()
 
 void UserController::recharge()
 {
-    if (currentUser_ == nullptr) return;
-    
+    if (currentUser_ == nullptr)
+        return;
+
     double amount;
     std::cout << "充值金额: ";
     std::cin >> amount;
@@ -103,14 +104,16 @@ void UserController::recharge()
 
 void UserController::showBalance()
 {
-    if (currentUser_ == nullptr) return;
+    if (currentUser_ == nullptr)
+        return;
     std::cout << "当前余额: " << currentUser_->GetBalance() << " 元\n";
 }
 
 void UserController::sendPackage()
 {
-    if (currentUser_ == nullptr) return;
-    
+    if (currentUser_ == nullptr)
+        return;
+
     std::string receiverName, description;
     int type;
     double weight;
@@ -120,7 +123,7 @@ void UserController::sendPackage()
     std::cout << "收件人用户名: ";
     std::cin >> receiverName;
 
-    User* receiver = dataManager_.findUser(receiverName);
+    User *receiver = dataManager_.findUser(receiverName);
     if (receiver == nullptr)
     {
         std::cout << "收件人不存在\n";
@@ -135,7 +138,7 @@ void UserController::sendPackage()
     std::cin >> type;
 
     double price = 0;
-    Package* newPackage = nullptr;
+    Package *newPackage = nullptr;
     time_t now = time(nullptr);
     std::string sendTime = ctime(&now);
     sendTime.pop_back();
@@ -152,21 +155,21 @@ void UserController::sendPackage()
         std::cin >> weight;
         price = 8.0 * weight;
         newPackage = new FragilePackage(packageId, currentUser_->GetUsername(),
-                                         receiverName, sendTime, description, weight);
+                                        receiverName, sendTime, description, weight);
         break;
     case 2:
         std::cout << "数量(本): ";
         std::cin >> count;
         price = 2.0 * count;
         newPackage = new BookPackage(packageId, currentUser_->GetUsername(),
-                                      receiverName, sendTime, description, count);
+                                     receiverName, sendTime, description, count);
         break;
     case 3:
         std::cout << "重量(kg): ";
         std::cin >> weight;
         price = 5.0 * weight;
         newPackage = new NormalPackage(packageId, currentUser_->GetUsername(),
-                                        receiverName, sendTime, description, weight);
+                                       receiverName, sendTime, description, weight);
         break;
     default:
         std::cout << "无效类型\n";
@@ -192,14 +195,15 @@ void UserController::sendPackage()
 
 void UserController::receivePackage()
 {
-    if (currentUser_ == nullptr) return;
-    
+    if (currentUser_ == nullptr)
+        return;
+
     std::cout << "\n========== 接收快递 ==========\n";
-    auto& packages = dataManager_.getPackages();
+    auto &packages = dataManager_.getPackages();
     std::vector<int> waitingIndices;
     int index = 0;
 
-    for (const auto& pkg : packages)
+    for (const auto &pkg : packages)
     {
         if (pkg->GetReceiver() == currentUser_->GetUsername() && pkg->IsWaitingSign())
         {
@@ -223,7 +227,8 @@ void UserController::receivePackage()
     while (std::cin >> num)
     {
         selected.push_back(num);
-        if (std::cin.get() == '\n') break;
+        if (std::cin.get() == '\n')
+            break;
     }
 
     time_t now = time(nullptr);
@@ -243,8 +248,9 @@ void UserController::receivePackage()
 
 void UserController::queryPackages()
 {
-    if (currentUser_ == nullptr) return;
-    
+    if (currentUser_ == nullptr)
+        return;
+
     int choice;
     std::cout << "\n========== 查询快递 ==========\n";
     std::cout << "1. 我发出的\n";
@@ -253,12 +259,12 @@ void UserController::queryPackages()
     std::cout << "请选择: ";
     std::cin >> choice;
 
-    auto& packages = dataManager_.getPackages();
+    auto &packages = dataManager_.getPackages();
 
     switch (choice)
     {
     case 1:
-        for (const auto& pkg : packages)
+        for (const auto &pkg : packages)
         {
             if (pkg->GetSender() == currentUser_->GetUsername())
                 std::cout << "单号: " << pkg->GetId() << " | 收件人: " << pkg->GetReceiver()
@@ -266,7 +272,7 @@ void UserController::queryPackages()
         }
         break;
     case 2:
-        for (const auto& pkg : packages)
+        for (const auto &pkg : packages)
         {
             if (pkg->GetReceiver() == currentUser_->GetUsername())
                 std::cout << "单号: " << pkg->GetId() << " | 寄件人: " << pkg->GetSender()
@@ -278,7 +284,7 @@ void UserController::queryPackages()
         std::string id;
         std::cout << "快递单号: ";
         std::cin >> id;
-        Package* pkg = dataManager_.findPackage(id);
+        Package *pkg = dataManager_.findPackage(id);
         if (pkg)
             std::cout << "单号: " << pkg->GetId() << " | 寄件人: " << pkg->GetSender()
                       << " | 收件人: " << pkg->GetReceiver()
@@ -294,8 +300,9 @@ void UserController::queryPackages()
 
 void UserController::showMenu()
 {
-    if (currentUser_ == nullptr) return;
-    
+    if (currentUser_ == nullptr)
+        return;
+
     int choice;
     while (true)
     {
@@ -339,5 +346,5 @@ void UserController::showMenu()
     }
 }
 
-User* UserController::getCurrentUser() const { return currentUser_; }
+User *UserController::getCurrentUser() const { return currentUser_; }
 bool UserController::isLoggedIn() const { return currentUser_ != nullptr; }
