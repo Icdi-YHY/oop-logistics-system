@@ -9,16 +9,16 @@
                 "-g",
                 "-fexec-charset=GBK",
                 "-finput-charset=UTF-8",
-                "C:\\Code\\oop-logistics-system\\src\\main.cpp",
-                "C:\\Code\\oop-logistics-system\\src\\LogisticsSystem.cpp",
-                "C:\\Code\\oop-logistics-system\\src\\User.cpp",
-                "C:\\Code\\oop-logistics-system\\src\\Admin.cpp",
-                "C:\\Code\\oop-logistics-system\\src\\Package.cpp",
+                "C:\\Code\\oop-logistics-system\\topic1\\src\\main.cpp",
+                "C:\\Code\\oop-logistics-system\\topic1\\src\\LogisticsSystem.cpp",
+                "C:\\Code\\oop-logistics-system\\topic1\\src\\User.cpp",
+                "C:\\Code\\oop-logistics-system\\topic1\\src\\Admin.cpp",
+                "C:\\Code\\oop-logistics-system\\topic1\\src\\Package.cpp",
                 "-o",
-                "C:\\Code\\oop-logistics-system\\src\\main.exe"
+                "C:\\Code\\oop-logistics-system\\topic1\\src\\main.exe"
             ],
             "options": {
-                "cwd": "C:\\Code\\oop-logistics-system\\src"
+                "cwd": "C:\\Code\\oop-logistics-system\\topic1\\src"
             },
             "problemMatcher": [
                 "$gcc"
@@ -29,13 +29,7 @@
             },
             "detail": "调试器生成的任务。"
         },
-        {
-            "type": "cmake",
-            "label": "CMake: 安装",
-            "command": "install",
-            "problemMatcher": [],
-            "detail": "CMake 模板 安装 任务"
-        }
+        
     ],
     "version": "2.0.0"
 }

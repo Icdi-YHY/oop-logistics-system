@@ -1,0 +1,56 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "cppbuild",
+            "label": "C/C++: g++.exe 生成活动文件",
+            "command": "C:\\mingw64\\bin\\g++.exe",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "-fexec-charset=GBK",
+                "-finput-charset=UTF-8",
+                "C:\\Code\\oop-logistics-system\\topic2\\src\\main.cpp",
+                "C:\\Code\\oop-logistics-system\\topic2\\src\\LogisticsSystem.cpp",
+                "C:\\Code\\oop-logistics-system\\topic2\\src\\User.cpp",
+                "C:\\Code\\oop-logistics-system\\topic2\\src\\Admin.cpp",
+                "C:\\Code\\oop-logistics-system\\topic2\\src\\Package.cpp",
+                "C:\\Code\\oop-logistics-system\\topic2\\src\\Person.cpp",
+                "C:\\Code\\oop-logistics-system\\topic2\\src\\Courier.cpp",
+                "C:\\Code\\oop-logistics-system\\topic2\\src\\DataManager.cpp",
+                "C:\\Code\\oop-logistics-system\\topic2\\src\\UserController.cpp",
+                "C:\\Code\\oop-logistics-system\\topic2\\src\\AdminController.cpp",
+                "C:\\Code\\oop-logistics-system\\topic2\\src\\CourierController.cpp",
+                "C:\\Code\\oop-logistics-system\\topic2\\src\\FragilePackage.cpp",
+                "C:\\Code\\oop-logistics-system\\topic2\\src\\BookPackage.cpp",
+                "C:\\Code\\oop-logistics-system\\topic2\\src\\NormalPackage.cpp",
+                "-I",
+                "C:\\Code\\oop-logistics-system\\topic2\\include",
+                "-o",
+                "C:\\Code\\oop-logistics-system\\topic2\\src\\main.exe"
+            ],
+            "options": {
+                "cwd": "C:\\Code\\oop-logistics-system\\topic2"
+            },
+            "problemMatcher": ["$gcc"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "编译 topic2 完整项目"
+        },
+        {
+            "type": "shell",
+            "label": "运行 topic2",
+            "command": "C:\\Code\\oop-logistics-system\\topic2\\src\\main.exe",
+            "options": {
+                "cwd": "C:\\Code\\oop-logistics-system\\topic2"
+            },
+            "problemMatcher": [],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
+        }
+    ]
+}
