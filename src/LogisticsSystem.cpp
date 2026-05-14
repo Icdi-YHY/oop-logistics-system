@@ -575,7 +575,7 @@ void LogisticsSystem::queryPackages() const
         {
             if (pkg.GetSender() == currentUser_->GetUsername())
             {
-                 printPackage(pkg);
+                printPackage(pkg);
                 found = true;
             }
         }
