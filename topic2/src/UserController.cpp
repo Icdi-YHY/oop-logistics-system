@@ -135,7 +135,13 @@ void UserController::sendPackage()
     std::cout << "2. 图书 (2元/本)\n";
     std::cout << "3. 普通快递 (5元/kg)\n";
     std::cout << "请选择: ";
-    std::cin >> type;
+    if (!(std::cin >> type))
+    {
+        std::cin.clear();
+        std::cin.ignore(10000, '\n');
+        std::cout << "输入非法";
+        return;
+    }
 
     double price = 0;
     Package *newPackage = nullptr;
@@ -257,7 +263,13 @@ void UserController::queryPackages()
     std::cout << "2. 我接收的\n";
     std::cout << "3. 按单号查询\n";
     std::cout << "请选择: ";
-    std::cin >> choice;
+    if (!(std::cin >> choice))
+    {
+        std::cin.clear();
+        std::cin.ignore(10000, '\n');
+        std::cout << "输入非法";
+        return;
+    }
 
     auto &packages = dataManager_.getPackages();
 
@@ -315,7 +327,13 @@ void UserController::showMenu()
         std::cout << "6. 修改密码\n";
         std::cout << "0. 退出登录\n";
         std::cout << "请选择: ";
-        std::cin >> choice;
+        if (!(std::cin >> choice))
+        {
+            std::cin.clear();
+            std::cin.ignore(10000, '\n');
+            std::cout << "输入非法";
+            continue;
+        }
 
         switch (choice)
         {

@@ -2,8 +2,7 @@
 
 int main()
 {
-
     LogisticsSystem system;
-    system.run(); // 改为 run
+    system.run();
     return 0;
 }

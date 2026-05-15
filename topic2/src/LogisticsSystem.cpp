@@ -2,10 +2,7 @@
 #include <iostream>
 
 LogisticsSystem::LogisticsSystem()
-    : dataManager_()
-    , userCtrl_(dataManager_)
-    , adminCtrl_(dataManager_)
-    , courierCtrl_(dataManager_)
+    : dataManager_(), userCtrl_(dataManager_), adminCtrl_(dataManager_), courierCtrl_(dataManager_)
 {
     dataManager_.loadData();
 }
@@ -22,7 +19,13 @@ void LogisticsSystem::run()
         std::cout << "4. 用户注册\n";
         std::cout << "0. 退出系统\n";
         std::cout << "请选择: ";
-        std::cin >> choice;
+        if (!(std::cin >> choice))
+        {
+            std::cin.clear();
+            std::cin.ignore(10000, '\n');
+            std::cout << "输入非法";
+            continue;
+        }
 
         switch (choice)
         {

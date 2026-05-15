@@ -12,7 +12,13 @@ bool CourierController::login()
     std::string password;
     std::cout << "\n========== 快递员登录 ==========\n";
     std::cout << "快递员ID: ";
-    std::cin >> id;
+    if (!(std::cin >> id))
+    {
+        std::cin.clear();
+        std::cin.ignore(10000, '\n');
+        std::cout << "输入非法";
+        return false;
+    }
     while (std::cin.fail())
     {
         std::cin.clear();             // 1. 清除错误标志
@@ -195,7 +201,13 @@ void CourierController::showMenu()
         std::cout << "5. 修改密码\n";
         std::cout << "0. 退出登录\n";
         std::cout << "请选择: ";
-        std::cin >> choice;
+        if (!(std::cin >> choice))
+        {
+            std::cin.clear();
+            std::cin.ignore(10000, '\n');
+            std::cout << "输入非法";
+            continue;
+        }
 
         switch (choice)
         {

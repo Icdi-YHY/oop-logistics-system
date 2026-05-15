@@ -2,7 +2,7 @@
 #include <iostream>
 #include <algorithm>
 
-AdminController::AdminController(DataManager& dm)
+AdminController::AdminController(DataManager &dm)
     : dataManager_(dm), isLoggedIn_(false)
 {
 }
@@ -16,7 +16,7 @@ bool AdminController::login()
     std::cout << "密码: ";
     std::cin >> password;
 
-    Admin& admin = dataManager_.getAdmin();
+    Admin &admin = dataManager_.getAdmin();
     if (username == admin.GetUsername() && admin.CheckPassword(password))
     {
         isLoggedIn_ = true;
@@ -39,7 +39,7 @@ void AdminController::logout()
 void AdminController::showAllUsers()
 {
     std::cout << "\n========== 所有用户 ==========\n";
-    for (const auto& user : dataManager_.getUsers())
+    for (const auto &user : dataManager_.getUsers())
     {
         std::cout << "用户名: " << user.GetUsername() << " | 姓名: " << user.GetName()
                   << " | 电话: " << user.GetPhonenum() << " | 余额: " << user.GetBalance() << "\n";
@@ -49,7 +49,7 @@ void AdminController::showAllUsers()
 void AdminController::showAllPackages()
 {
     std::cout << "\n========== 所有快递 ==========\n";
-    for (const auto& pkg : dataManager_.getPackages())
+    for (const auto &pkg : dataManager_.getPackages())
     {
         std::cout << "单号: " << pkg->GetId() << " | 寄件人: " << pkg->GetSender()
                   << " | 收件人: " << pkg->GetReceiver()
@@ -71,7 +71,7 @@ void AdminController::addCourier()
     std::cin >> phone;
     std::cout << "密码: ";
     std::cin >> password;
-    
+
     int id = dataManager_.getNextCourierId();
     Courier newCourier(id, name, phone, password, 0.0);
     dataManager_.addCourier(newCourier);
@@ -84,8 +84,14 @@ void AdminController::removeCourier()
     int id;
     showAllCouriers();
     std::cout << "请输入要删除的快递员ID: ";
-    std::cin >> id;
-    
+    if (!(std::cin >> id))
+    {
+        std::cin.clear();
+        std::cin.ignore(10000, '\n');
+        std::cout << "输入非法";
+        return;
+    }
+
     dataManager_.removeCourier(id);
     dataManager_.saveData();
     std::cout << "删除成功\n";
@@ -94,7 +100,7 @@ void AdminController::removeCourier()
 void AdminController::showAllCouriers()
 {
     std::cout << "\n========== 所有快递员 ==========\n";
-    for (const auto& courier : dataManager_.getCouriers())
+    for (const auto &courier : dataManager_.getCouriers())
     {
         std::cout << "ID: " << courier.GetId() << " | 姓名: " << courier.GetName()
                   << " | 电话: " << courier.GetPhone() << " | 余额: " << courier.GetBalance() << "\n";
@@ -105,23 +111,29 @@ void AdminController::showCourierDetail()
 {
     int id;
     std::cout << "请输入快递员ID: ";
-    std::cin >> id;
-    
-    Courier* courier = dataManager_.findCourier(id);
+    if (!(std::cin >> id))
+    {
+        std::cin.clear();
+        std::cin.ignore(10000, '\n');
+        std::cout << "输入非法";
+        return;
+    }
+
+    Courier *courier = dataManager_.findCourier(id);
     if (courier == nullptr)
     {
         std::cout << "快递员不存在\n";
         return;
     }
-    
+
     std::cout << "ID: " << courier->GetId() << "\n";
     std::cout << "姓名: " << courier->GetName() << "\n";
     std::cout << "电话: " << courier->GetPhone() << "\n";
     std::cout << "余额: " << courier->GetBalance() << "\n";
-    
+
     std::cout << "\n揽收记录:\n";
     auto packages = dataManager_.findPackagesByCourier(id);
-    for (const auto& pkg : packages)
+    for (const auto &pkg : packages)
     {
         std::cout << "  单号: " << pkg->GetId() << " | 寄件人: " << pkg->GetSender()
                   << " | 收件人: " << pkg->GetReceiver()
@@ -137,7 +149,7 @@ void AdminController::assignCourierToPackage()
         std::cout << "没有待揽收的快递\n";
         return;
     }
-    
+
     std::cout << "\n待揽收快递:\n";
     for (size_t i = 0; i < waitingPackages.size(); i++)
     {
@@ -145,29 +157,41 @@ void AdminController::assignCourierToPackage()
                   << " | 寄件人: " << waitingPackages[i]->GetSender()
                   << " | 收件人: " << waitingPackages[i]->GetReceiver() << "\n";
     }
-    
+
     int pkgIndex;
     std::cout << "请选择快递编号: ";
-    std::cin >> pkgIndex;
-    
+    if (!(std::cin >> pkgIndex))
+    {
+        std::cin.clear();
+        std::cin.ignore(10000, '\n');
+        std::cout << "输入非法";
+        return;
+    }
+
     if (pkgIndex < 0 || pkgIndex >= (int)waitingPackages.size())
     {
         std::cout << "无效选择\n";
         return;
     }
-    
+
     showAllCouriers();
     int courierId;
     std::cout << "请选择快递员ID: ";
-    std::cin >> courierId;
-    
-    Courier* courier = dataManager_.findCourier(courierId);
+    if (!(std::cin >> courierId))
+    {
+        std::cin.clear();
+        std::cin.ignore(10000, '\n');
+        std::cout << "输入非法";
+        return;
+    }
+
+    Courier *courier = dataManager_.findCourier(courierId);
     if (courier == nullptr)
     {
         std::cout << "快递员不存在\n";
         return;
     }
-    
+
     waitingPackages[pkgIndex]->SetCourierId(courierId);
     dataManager_.saveData();
     std::cout << "分配成功！快递员 " << courier->GetName() << " 将揽收此快递\n";
@@ -175,8 +199,9 @@ void AdminController::assignCourierToPackage()
 
 void AdminController::showMenu()
 {
-    if (!isLoggedIn_) return;
-    
+    if (!isLoggedIn_)
+        return;
+
     int choice;
     while (true)
     {
@@ -191,8 +216,13 @@ void AdminController::showMenu()
         std::cout << "8. 分配揽收任务\n";
         std::cout << "0. 退出登录\n";
         std::cout << "请选择: ";
-        std::cin >> choice;
-
+        if (!(std::cin >> choice))
+        {
+            std::cin.clear();
+            std::cin.ignore(10000, '\n');
+            std::cout << "输入非法";
+            continue;
+        }
         switch (choice)
         {
         case 1:
