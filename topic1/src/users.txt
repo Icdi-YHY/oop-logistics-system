@@ -1,5 +1,7 @@
-yihongyang|�׺���|18779536019|2024210979|170|�����ʵ��ѧ
+yihongyang|�׺���|18779536019|2024210979|285|�����ʵ��ѧ
 zhangsan|����|18779536019|zhangsan|100|�����ʵ��ѧ
 nishizhu|nishizhu|adsfgh|bizhuaosdfigh|0|asdgf
 user1|user1|user1|user��|0|user1
 lisi|lisi|123|lisi|100|456
+0|0|0|00|0|0
+sadf|asd|asd|asd|0|asd

@@ -53,7 +53,7 @@ void LogisticsSystem::printPackage(const Package &pkg) const
 // 主入口
 void LogisticsSystem::Run()
 {
-    int choice;
+    std::string choice;
     while (true)
     {
         std::cout << "\n========== 物流管理系统 ==========\n";
@@ -64,26 +64,29 @@ void LogisticsSystem::Run()
         std::cout << "请选择: ";
         std::cin >> choice;
 
-        switch (choice)
+        if (choice == "1")
         {
-        case 1:
             userRegister();
-            break;
-        case 2:
+        }
+        else if (choice == "2")
+        {
             if (userLogin())
             {
                 userMenu();
             }
-            break;
-        case 3:
+        }
+        else if (choice == "3")
+        {
             adminLogin();
-            break;
-
-        case 0:
+        }
+        else if (choice == "0")
+        {
             saveData();
             std::cout << "感谢使用，再见\n";
             return;
-        default:
+        }
+        else
+        {
             std::cout << "输入无效，请重新输入\n";
         }
     }
@@ -237,7 +240,7 @@ void LogisticsSystem::saveData() const
 // 用户菜单
 void LogisticsSystem::userMenu()
 {
-    int choice;
+    std::string choice;
     while (true)
     {
         std::cout << "\n========== 用户菜单 ==========\n";
@@ -251,9 +254,7 @@ void LogisticsSystem::userMenu()
         std::cout << "请选择: ";
         std::cin >> choice;
 
-        switch (choice)
-        {
-        case 1:
+        if (choice == "1")
         {
             std::string oldPwd, newPwd;
             std::cout << "请输入旧密码: ";
@@ -262,7 +263,7 @@ void LogisticsSystem::userMenu()
             if (!currentUser_->CheckPassword(oldPwd))
             {
                 std::cout << "原密码错误！\n";
-                break;
+                continue;
             }
 
             std::cout << "请输入新密码: ";
@@ -271,17 +272,25 @@ void LogisticsSystem::userMenu()
             currentUser_->SetPassword(newPwd);
             saveData();
             std::cout << "密码修改成功！\n";
-            break;
         }
-        case 2:
+        else if (choice == "2")
+        {
             std::cout << "当前余额: " << currentUser_->GetBalance() << " 元\n";
-            break;
-        case 3:
+            continue;
+        }
+        else if (choice == "3")
         {
             double amount;
             std::cout << "请输入充值金额: ";
-            std::cin >> amount;
-            if (amount > 0)
+            // 检查输入是否有效
+            if (!(std::cin >> amount))
+            {
+                std::cin.clear();             // 清除失败标志
+                std::cin.ignore(10000, '\n'); // 丢弃错误输入
+                std::cout << "输入无效，请输入数字！\n";
+                continue;
+            }
+            else if (amount > 0)
             {
                 currentUser_->Recharge(amount);
                 saveData();
@@ -291,22 +300,29 @@ void LogisticsSystem::userMenu()
             {
                 std::cout << "充值金额必须大于0\n";
             }
-            break;
+            continue;
         }
-        case 4:
+        else if (choice == "4")
+        {
             sendPackage();
-            break;
-        case 5:
+        }
+        else if (choice == "5")
+        {
             receivePackage();
-            break;
-        case 6:
+        }
+        else if (choice == "6")
+        {
+
             queryPackages();
-            break;
-        case 0:
+        }
+        else if (choice == "0")
+        {
             currentUser_ = nullptr;
             std::cout << "已退出登录\n";
             return;
-        default:
+        }
+        else
+        {
             std::cout << "无效选择，请重新输入\n";
         }
     }
@@ -397,7 +413,7 @@ void LogisticsSystem::adminLogin()
         std::cout << "登录成功！欢迎 " << admin_.GetName() << "\n";
 
         // 管理员菜单
-        int choice;
+        std::string choice;
         while (true)
         {
             std::cout << "\n========== 管理员菜单 ==========\n";
@@ -408,25 +424,23 @@ void LogisticsSystem::adminLogin()
             std::cout << "请选择: ";
             std::cin >> choice;
 
-            switch (choice)
-            {
-            case 1:
+            if (choice == "1")
+
                 viewAllUsers();
-                break;
-            case 2:
+            else if (choice == "2")
                 viewAllPackages();
-                break;
-            case 3:
+            else if (choice == "3")
                 std::cout << "公司账户余额: " << admin_.GetBalance() << " 元\n";
-                break;
-            case 0:
+            else if (choice == "0")
+            {
                 std::cout << "已退出管理员登录\n";
                 return;
-            default:
-                std::cout << "无效选择，请重新输入\n";
             }
+            else
+                std::cout << "无效选择，请重新输入\n";
         }
     }
+
     else
     {
         std::cout << "用户名或密码错误！\n";
@@ -529,11 +543,21 @@ void LogisticsSystem::receivePackage()
 
     std::vector<int> selected;
     int num;
+
     while (std::cin >> num)
     {
         selected.push_back(num);
         if (std::cin.get() == '\n')
             break;
+    }
+
+    // 添加这段：处理输入失败（输入了非数字）
+    if (std::cin.fail())
+    {
+        std::cin.clear();             // 清除失败标志
+        std::cin.ignore(10000, '\n'); // 丢弃错误输入
+        std::cout << "输入无效，请只输入数字编号！" << std::endl;
+        return; // 返回到菜单，让用户重新选择
     }
 
     // 4. 签收选中的快递
@@ -557,7 +581,7 @@ void LogisticsSystem::receivePackage()
 }
 void LogisticsSystem::queryPackages() const
 {
-    int choice;
+    std::string choice;
     std::cout << "\n========== 查询快递 ==========\n";
     std::cout << "1. 我发出的快递\n";
     std::cout << "2. 我接收的快递\n";
@@ -565,9 +589,7 @@ void LogisticsSystem::queryPackages() const
     std::cout << "请选择: ";
     std::cin >> choice;
 
-    switch (choice)
-    {
-    case 1:
+    if (choice == "1")
     {
         std::cout << "\n========== 我发出的快递 ==========\n";
         bool found = false;
@@ -581,9 +603,8 @@ void LogisticsSystem::queryPackages() const
         }
         if (!found)
             std::cout << "暂无发出的快递\n";
-        break;
     }
-    case 2:
+    else if (choice == "2")
     {
         std::cout << "\n========== 我接收的快递 ==========\n";
         bool found = false;
@@ -597,9 +618,9 @@ void LogisticsSystem::queryPackages() const
         }
         if (!found)
             std::cout << "暂无接收的快递\n";
-        break;
+        return;
     }
-    case 3:
+    else if (choice == "3")
     {
         std::string packageId;
         std::cout << "请输入快递单号: ";
@@ -617,11 +638,11 @@ void LogisticsSystem::queryPackages() const
         }
         if (!found)
             std::cout << "未找到该快递\n";
-        break;
+        return;
     }
-    default:
+    else
         std::cout << "无效选择\n";
-    }
+    return;
 }
 
 // 管理员功能
