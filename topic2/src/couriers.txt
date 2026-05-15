@@ -1,4 +1,1 @@
 1|zhangsan|123|zhangsan|0
-2|lisi|123|lisi|0
-1|zhangsan|123|zhangsan|0
-2|lisi|123|lisi|0
