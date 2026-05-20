@@ -11,17 +11,17 @@ protected:
     std::string receiver_;
     std::string sendTime_;
     std::string receiveTime_;
-    int status_;        // 0=待揽收 1=待签收 2=已签收
+    int status_; // 0=待揽收 1=待签收 2=已签收
     std::string description_;
-    int courierId_;     // 揽收快递员ID（0=未分配）
+    int courierId_; // 揽收快递员ID（0=未分配）
 
 public:
     // 构造函数
-    Package(const std::string& packageId,
-            const std::string& sender,
-            const std::string& receiver,
-            const std::string& sendTime,
-            const std::string& description);
+    Package(const std::string &packageId,
+            const std::string &sender,
+            const std::string &receiver,
+            const std::string &sendTime,
+            const std::string &description);
 
     virtual ~Package() = default;
 
@@ -41,12 +41,13 @@ public:
     // Setter方法
     void SetStatus(int status);
     void SetCourierId(int courierId);
-    void Sign(const std::string& receiveTime);
+    void SetReceiveTime(const std::string &time);
+    void Sign(const std::string &receiveTime);
 
     // 状态判断
-    bool IsWaitingCollect() const;  // 待揽收
-    bool IsWaitingSign() const;     // 待签收
-    bool IsSigned() const;          // 已签收
+    bool IsWaitingCollect() const; // 待揽收
+    bool IsWaitingSign() const;    // 待签收
+    bool IsSigned() const;         // 已签收
 };
 
 #endif

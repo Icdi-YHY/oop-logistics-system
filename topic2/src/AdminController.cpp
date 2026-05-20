@@ -41,9 +41,14 @@ void AdminController::showAllUsers()
     std::cout << "\n========== 所有用户 ==========\n";
     for (const auto &user : dataManager_.getUsers())
     {
-        std::cout << "用户名: " << user.GetUsername() << " | 姓名: " << user.GetName()
-                  << " | 电话: " << user.GetPhonenum() << " | 余额: " << user.GetBalance() << "\n";
+        std::cout << "----------------------------\n";
+        std::cout << "用户名: " << user.GetUsername() << "\n";
+        std::cout << "姓名: " << user.GetName() << "\n";
+        std::cout << "电话: " << user.GetPhonenum() << "\n";
+        std::cout << "地址: " << user.GetAddress() << "\n";
+        std::cout << "余额: " << user.GetBalance() << " 元\n";
     }
+    std::cout << "----------------------------\n";
 }
 
 void AdminController::showAllPackages()
@@ -51,10 +56,27 @@ void AdminController::showAllPackages()
     std::cout << "\n========== 所有快递 ==========\n";
     for (const auto &pkg : dataManager_.getPackages())
     {
-        std::cout << "单号: " << pkg->GetId() << " | 寄件人: " << pkg->GetSender()
-                  << " | 收件人: " << pkg->GetReceiver()
-                  << " | 状态: " << (pkg->IsSigned() ? "已签收" : (pkg->IsWaitingSign() ? "待签收" : "待揽收")) << "\n";
+        std::cout << "----------------------------\n";
+        std::cout << "快递单号: " << pkg->GetId() << "\n";
+        std::cout << "寄件人: " << pkg->GetSender() << "\n";
+        std::cout << "收件人: " << pkg->GetReceiver() << "\n";
+        std::cout << "寄件时间: " << pkg->GetSendTime() << "\n";
+        if (pkg->GetStatus() == 2)
+        {
+            std::cout << "签收时间: " << pkg->GetReceiveTime() << "\n";
+            std::cout << "状态: 已签收\n";
+        }
+        else if (pkg->GetStatus() == 1)
+        {
+            std::cout << "状态: 待签收\n";
+        }
+        else
+        {
+            std::cout << "状态: 待揽收\n";
+        }
+        std::cout << "物品描述: " << pkg->GetDescription() << "\n";
     }
+    std::cout << "----------------------------\n";
 }
 
 void AdminController::showCompanyBalance()
@@ -102,9 +124,14 @@ void AdminController::showAllCouriers()
     std::cout << "\n========== 所有快递员 ==========\n";
     for (const auto &courier : dataManager_.getCouriers())
     {
-        std::cout << "ID: " << courier.GetId() << " | 姓名: " << courier.GetName()
-                  << " | 电话: " << courier.GetPhone() << " | 余额: " << courier.GetBalance() << "\n";
+
+        std::cout << "----------------------------\n";
+        std::cout << "用户名: " << courier.GetId() << "\n";
+        std::cout << "姓名: " << courier.GetName() << "\n";
+        std::cout << "电话: " << courier.GetPhone() << "\n";
+        std::cout << "余额: " << courier.GetBalance() << " 元\n";
     }
+    std::cout << "----------------------------\n";
 }
 
 void AdminController::showCourierDetail()

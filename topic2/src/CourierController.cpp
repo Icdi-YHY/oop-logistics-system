@@ -123,7 +123,9 @@ void CourierController::collectPackage()
 
             admin.DeductBalance(commission);
             currentCourier_->AddEarnings(commission);
-            pkg->SetStatus(1); // 待揽收 -> 待签收
+            pkg->SetStatus(1);                           // 待揽收 -> 待签收
+            pkg->SetCourierId(currentCourier_->GetId()); // 设置揽收的快递员ID
+
             totalCommission += commission;
 
             std::cout << "已揽收: " << pkg->GetId() << " 佣金: " << commission << " 元\n";

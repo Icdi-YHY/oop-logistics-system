@@ -50,6 +50,7 @@ void UserController::registerUser()
     if (dataManager_.findUser(username) != nullptr)
     {
         std::cout << "用户名已存在\n";
+        return;
     }
 
     std::cout << "姓名: ";

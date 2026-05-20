@@ -1,1 +1,1 @@
-admin|物流公司管理员|admin123|75
+admin|物流公司管理员|admin123|30

@@ -143,8 +143,7 @@ void DataManager::loadData()
             }
             pkg->SetStatus(status);
             pkg->SetCourierId(courierId);
-            if (!receiveTime.empty())
-                pkg->Sign(receiveTime);
+            pkg->SetReceiveTime(receiveTime);
             packages_.push_back(pkg);
 
             int id = std::stoi(packageId);
