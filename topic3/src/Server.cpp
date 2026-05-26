@@ -42,6 +42,9 @@ void Server::start()
         return;
     }
 
+    BOOL reuse = TRUE;
+    setsockopt(listenSocket_, SOL_SOCKET, SO_REUSEADDR, (char*)&reuse, sizeof(reuse));
+
     sockaddr_in serverAddr;
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_addr.s_addr = INADDR_ANY;
@@ -70,7 +73,9 @@ void Server::start()
         SOCKET clientSocket = accept(listenSocket_, (sockaddr*)&clientAddr, &clientAddrSize);
 
         if (clientSocket == INVALID_SOCKET) {
-            if (running_) std::cerr << "Accept failed" << std::endl;
+            if (running_) {
+                std::cerr << "Accept failed, error: " << WSAGetLastError() << std::endl;
+            }
             continue;
         }
 
@@ -102,6 +107,8 @@ void Server::start()
 void Server::stop()
 {
     running_ = false;
+    closesocket(listenSocket_);
+    listenSocket_ = INVALID_SOCKET;
 }
 
 std::string Server::formatDate(const std::string& timeStr)
