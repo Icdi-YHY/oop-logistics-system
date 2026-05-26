@@ -28,16 +28,14 @@ void Person::SetPassword(const std::string& newpwd)
 
 void Person::AddBalance(double amount)
 {
-    if (amount > 0)
-    {
+    if (amount > 0) {
         balance_ += amount;
     }
 }
 
 bool Person::DeductBalance(double amount)
 {
-    if (amount > 0 && balance_ >= amount)
-    {
+    if (amount > 0 && balance_ >= amount) {
         balance_ -= amount;
         return true;
     }

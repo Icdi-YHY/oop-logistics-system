@@ -3,37 +3,31 @@
 
 #include <string>
 
+/**
+ * @brief 人员基类
+ * 包含所有人员共有的属性：用户名、姓名、密码、账户余额
+ */
 class Person
 {
-protected:  // 改为 protected，让子类可以访问
-    std::string username_;
-    std::string name_;
-    std::string password_;
-    double balance_;
+protected:
+    std::string username_;  // 用户名（唯一标识）
+    std::string name_;      // 真实姓名
+    std::string password_;  // 登录密码
+    double balance_;        // 账户余额
 
 public:
-    // 构造函数
     Person(const std::string& username,
            const std::string& name,
            const std::string& password,
            double balance);
 
-    // Getter方法（const）
     std::string GetUsername() const;
     std::string GetName() const;
     double GetBalance() const;
     std::string GetPassword() const;
-
-    // 检查密码
     bool CheckPassword(const std::string& pwd) const;
-
-    // 修改密码
     void SetPassword(const std::string& newpwd);
-
-    // 增加余额
     void AddBalance(double amount);
-
-    // 扣费（余额不足返回false）
     bool DeductBalance(double amount);
 };
 

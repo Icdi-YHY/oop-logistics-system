@@ -6,23 +6,27 @@
 class User : public Person
 {
 private:
-    std::string phonenum_;
-    std::string address_;
+    std::string phonenum_;  // 电话号码
+    std::string address_;   // 地址
 
 public:
-    // 构造函数
+    // 构造函数（不含余额，余额默认为0）
+    User(const std::string& username,
+         const std::string& name,
+         const std::string& phonenum,
+         const std::string& password,
+         const std::string& address);
+
+    // 构造函数（含余额，用于从文件加载数据）
     User(const std::string& username,
          const std::string& name,
          const std::string& phonenum,
          const std::string& password,
          const std::string& address,
-         double balance = 0.0);
+         double balance);
 
-    // Getter方法
     std::string GetPhonenum() const;
     std::string GetAddress() const;
-
-    // 充值余额
     void Recharge(double amount);
 };
 

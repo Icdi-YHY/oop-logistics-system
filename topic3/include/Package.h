@@ -3,32 +3,30 @@
 
 #include <string>
 
+// 快递状态：0=待揽收 1=待签收 2=已签收
 class Package
 {
 protected:
-    std::string packageId_;
-    std::string sender_;
-    std::string receiver_;
-    std::string sendTime_;
-    std::string receiveTime_;
-    int status_; // 0=待揽收 1=待签收 2=已签收
-    std::string description_;
-    int courierId_; // 揽收快递员ID（0=未分配）
+    std::string packageId_;     // 快递单号
+    std::string sender_;        // 寄件人用户名
+    std::string receiver_;      // 收件人用户名
+    std::string sendTime_;      // 寄件时间
+    std::string receiveTime_;   // 签收时间
+    int status_;                // 0=待揽收 1=待签收 2=已签收
+    std::string description_;   // 物品描述
+    int courierId_;             // 揽收快递员ID（0=未分配）
 
 public:
-    // 构造函数
-    Package(const std::string &packageId,
-            const std::string &sender,
-            const std::string &receiver,
-            const std::string &sendTime,
-            const std::string &description);
+    Package(const std::string& packageId,
+            const std::string& sender,
+            const std::string& receiver,
+            const std::string& sendTime,
+            const std::string& description);
 
     virtual ~Package() = default;
 
-    // 纯虚函数
-    virtual double GetPrice() const = 0;
+    virtual double GetPrice() const = 0;  // 纯虚函数
 
-    // Getter方法
     std::string GetId() const;
     std::string GetSender() const;
     std::string GetReceiver() const;
@@ -38,16 +36,14 @@ public:
     std::string GetDescription() const;
     int GetCourierId() const;
 
-    // Setter方法
     void SetStatus(int status);
     void SetCourierId(int courierId);
-    void SetReceiveTime(const std::string &time);
-    void Sign(const std::string &receiveTime);
+    void SetReceiveTime(const std::string& time);
+    void Sign(const std::string& receiveTime);
 
-    // 状态判断
-    bool IsWaitingCollect() const; // 待揽收
-    bool IsWaitingSign() const;    // 待签收
-    bool IsSigned() const;         // 已签收
+    bool IsWaitingCollect() const;
+    bool IsWaitingSign() const;
+    bool IsSigned() const;
 };
 
 #endif

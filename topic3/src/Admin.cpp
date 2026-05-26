@@ -10,5 +10,5 @@ Admin::Admin(const std::string& username,
 
 void Admin::AddCompanyBalance(double amount)
 {
-    AddBalance(amount);  // 调用父类方法
+    AddBalance(amount);
 }

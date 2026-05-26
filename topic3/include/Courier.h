@@ -6,8 +6,8 @@
 class Courier : public Person
 {
 private:
-    int id_;
-    std::string phone_;
+    int id_;            // 快递员唯一编号
+    std::string phone_; // 联系电话
 
 public:
     Courier(int id,

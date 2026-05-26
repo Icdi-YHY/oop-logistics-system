@@ -1,11 +1,18 @@
 #include "../include/Package.h"
 
-Package::Package(const std::string &packageId,
-                 const std::string &sender,
-                 const std::string &receiver,
-                 const std::string &sendTime,
-                 const std::string &description)
-    : packageId_(packageId), sender_(sender), receiver_(receiver), sendTime_(sendTime), receiveTime_(""), status_(0), description_(description), courierId_(0)
+Package::Package(const std::string& packageId,
+                 const std::string& sender,
+                 const std::string& receiver,
+                 const std::string& sendTime,
+                 const std::string& description)
+    : packageId_(packageId)
+    , sender_(sender)
+    , receiver_(receiver)
+    , sendTime_(sendTime)
+    , receiveTime_("")
+    , status_(0)
+    , description_(description)
+    , courierId_(0)
 {
 }
 
@@ -20,11 +27,11 @@ int Package::GetCourierId() const { return courierId_; }
 
 void Package::SetStatus(int status) { status_ = status; }
 void Package::SetCourierId(int courierId) { courierId_ = courierId; }
-void Package::SetReceiveTime(const std::string &time) { receiveTime_ = time; }
-void Package::Sign(const std::string &receiveTime)
+void Package::SetReceiveTime(const std::string& time) { receiveTime_ = time; }
+
+void Package::Sign(const std::string& receiveTime)
 {
-    if (status_ == 1)
-    {
+    if (status_ == 1) {
         status_ = 2;
         receiveTime_ = receiveTime;
     }
