@@ -4,6 +4,9 @@
 #include "../include/NormalPackage.h"
 #include <iostream>
 #include <ctime>
+#include <sstream> // 添加
+#include <map>     // 添加
+#include <cctype>  // 添加
 UserController::UserController(DataManager &dm)
     : dataManager_(dm), currentUser_(nullptr)
 {
@@ -263,6 +266,7 @@ void UserController::queryPackages()
     std::cout << "1. 我发出的\n";
     std::cout << "2. 我接收的\n";
     std::cout << "3. 按单号查询\n";
+    std::cout << "4. 按时间查询\n";
     std::cout << "请选择: ";
     if (!(std::cin >> choice))
     {
@@ -304,6 +308,228 @@ void UserController::queryPackages()
                       << " | 状态: " << (pkg->IsSigned() ? "已签收" : (pkg->IsWaitingSign() ? "待签收" : "待揽收")) << "\n";
         else
             std::cout << "未找到\n";
+        break;
+    }
+    case 4:  // 按时间查询
+    {
+        // 辅助函数：将 "Tue May 19 14:09:41 2026" 转换为 "YYYY-MM-DD"
+        auto formatDate = [](const std::string& timeStr) -> std::string {
+            if (timeStr.empty()) return "";
+            
+            // 如果已经是 YYYY-MM-DD 格式，直接返回前10位
+            if (timeStr.length() >= 10 && isdigit(timeStr[0]) && timeStr[4] == '-' && timeStr[7] == '-')
+            {
+                return timeStr.substr(0, 10);
+            }
+            
+            // 解析旧格式: "Tue May 19 14:09:41 2026"
+            std::map<std::string, std::string> monthMap = {
+                {"Jan", "01"}, {"Feb", "02"}, {"Mar", "03"}, {"Apr", "04"},
+                {"May", "05"}, {"Jun", "06"}, {"Jul", "07"}, {"Aug", "08"},
+                {"Sep", "09"}, {"Oct", "10"}, {"Nov", "11"}, {"Dec", "12"}
+            };
+            
+            std::istringstream iss(timeStr);
+            std::string weekday, month, day, time, year;
+            iss >> weekday >> month >> day >> time >> year;
+            
+            if (day.length() == 1) day = "0" + day;
+            
+            return year + "-" + monthMap[month] + "-" + day;
+        };
+        
+        int queryType;
+        std::cout << "\n========== 按时间查询 ==========\n";
+        std::cout << "1. 查询我发出的快递\n";
+        std::cout << "2. 查询我接收的快递\n";
+        std::cout << "请选择: ";
+        
+        if (!(std::cin >> queryType))
+        {
+            std::cin.clear();
+            std::cin.ignore(10000, '\n');
+            std::cout << "输入非法\n";
+            break;
+        }
+        
+        int timeChoice;
+        std::cout << "\n1. 按具体日期查询\n";
+        std::cout << "2. 按年月查询\n";
+        std::cout << "3. 按时间段查询\n";
+        std::cout << "请选择: ";
+        
+        if (!(std::cin >> timeChoice))
+        {
+            std::cin.clear();
+            std::cin.ignore(10000, '\n');
+            std::cout << "输入非法\n";
+            break;
+        }
+        
+        if (queryType == 1)  // 我发出的
+        {
+            if (timeChoice == 1)  // 具体日期
+            {
+                std::string date;
+                std::cout << "请输入日期 (格式: YYYY-MM-DD): ";
+                std::cin >> date;
+                
+                std::cout << "\n========== " << date << " 我发出的快递 ==========\n";
+                bool found = false;
+                for (const auto &pkg : packages)
+                {
+                    if (pkg->GetSender() == currentUser_->GetUsername())
+                    {
+                        std::string sendDate = formatDate(pkg->GetSendTime());
+                        if (sendDate == date)
+                        {
+                            std::cout << "单号: " << pkg->GetId() << " | 收件人: " << pkg->GetReceiver()
+                                      << " | 寄件时间: " << pkg->GetSendTime()
+                                      << " | 状态: " << (pkg->IsSigned() ? "已签收" : (pkg->IsWaitingSign() ? "待签收" : "待揽收")) << "\n";
+                            found = true;
+                        }
+                    }
+                }
+                if (!found)
+                    std::cout << "未找到 " << date << " 发出的快递\n";
+            }
+            else if (timeChoice == 2)  // 按年月
+            {
+                std::string yearMonth;
+                std::cout << "请输入年月 (格式: YYYY-MM): ";
+                std::cin >> yearMonth;
+                
+                std::cout << "\n========== " << yearMonth << " 我发出的快递 ==========\n";
+                bool found = false;
+                for (const auto &pkg : packages)
+                {
+                    if (pkg->GetSender() == currentUser_->GetUsername())
+                    {
+                        std::string sendDate = formatDate(pkg->GetSendTime());
+                        if (sendDate.substr(0, 7) == yearMonth)
+                        {
+                            std::cout << "单号: " << pkg->GetId() << " | 收件人: " << pkg->GetReceiver()
+                                      << " | 寄件时间: " << pkg->GetSendTime()
+                                      << " | 状态: " << (pkg->IsSigned() ? "已签收" : (pkg->IsWaitingSign() ? "待签收" : "待揽收")) << "\n";
+                            found = true;
+                        }
+                    }
+                }
+                if (!found)
+                    std::cout << "未找到 " << yearMonth << " 发出的快递\n";
+            }
+            else if (timeChoice == 3)  // 时间段
+            {
+                std::string startDate, endDate;
+                std::cout << "请输入开始日期 (格式: YYYY-MM-DD): ";
+                std::cin >> startDate;
+                std::cout << "请输入结束日期 (格式: YYYY-MM-DD): ";
+                std::cin >> endDate;
+                
+                std::cout << "\n========== " << startDate << " 至 " << endDate << " 我发出的快递 ==========\n";
+                bool found = false;
+                for (const auto &pkg : packages)
+                {
+                    if (pkg->GetSender() == currentUser_->GetUsername())
+                    {
+                        std::string sendDate = formatDate(pkg->GetSendTime());
+                        if (sendDate >= startDate && sendDate <= endDate)
+                        {
+                            std::cout << "单号: " << pkg->GetId() << " | 收件人: " << pkg->GetReceiver()
+                                      << " | 寄件时间: " << pkg->GetSendTime()
+                                      << " | 状态: " << (pkg->IsSigned() ? "已签收" : (pkg->IsWaitingSign() ? "待签收" : "待揽收")) << "\n";
+                            found = true;
+                        }
+                    }
+                }
+                if (!found)
+                    std::cout << "未找到 " << startDate << " 至 " << endDate << " 发出的快递\n";
+            }
+        }
+        else if (queryType == 2)  // 我接收的
+        {
+            if (timeChoice == 1)  // 具体日期
+            {
+                std::string date;
+                std::cout << "请输入日期 (格式: YYYY-MM-DD): ";
+                std::cin >> date;
+                
+                std::cout << "\n========== " << date << " 我接收的快递 ==========\n";
+                bool found = false;
+                for (const auto &pkg : packages)
+                {
+                    if (pkg->GetReceiver() == currentUser_->GetUsername())
+                    {
+                        std::string sendDate = formatDate(pkg->GetSendTime());
+                        if (sendDate == date)
+                        {
+                            std::cout << "单号: " << pkg->GetId() << " | 寄件人: " << pkg->GetSender()
+                                      << " | 寄件时间: " << pkg->GetSendTime()
+                                      << " | 状态: " << (pkg->IsSigned() ? "已签收" : (pkg->IsWaitingSign() ? "待签收" : "待揽收")) << "\n";
+                            found = true;
+                        }
+                    }
+                }
+                if (!found)
+                    std::cout << "未找到 " << date << " 接收的快递\n";
+            }
+            else if (timeChoice == 2)  // 按年月
+            {
+                std::string yearMonth;
+                std::cout << "请输入年月 (格式: YYYY-MM): ";
+                std::cin >> yearMonth;
+                
+                std::cout << "\n========== " << yearMonth << " 我接收的快递 ==========\n";
+                bool found = false;
+                for (const auto &pkg : packages)
+                {
+                    if (pkg->GetReceiver() == currentUser_->GetUsername())
+                    {
+                        std::string sendDate = formatDate(pkg->GetSendTime());
+                        if (sendDate.substr(0, 7) == yearMonth)
+                        {
+                            std::cout << "单号: " << pkg->GetId() << " | 寄件人: " << pkg->GetSender()
+                                      << " | 寄件时间: " << pkg->GetSendTime()
+                                      << " | 状态: " << (pkg->IsSigned() ? "已签收" : (pkg->IsWaitingSign() ? "待签收" : "待揽收")) << "\n";
+                            found = true;
+                        }
+                    }
+                }
+                if (!found)
+                    std::cout << "未找到 " << yearMonth << " 接收的快递\n";
+            }
+            else if (timeChoice == 3)  // 时间段
+            {
+                std::string startDate, endDate;
+                std::cout << "请输入开始日期 (格式: YYYY-MM-DD): ";
+                std::cin >> startDate;
+                std::cout << "请输入结束日期 (格式: YYYY-MM-DD): ";
+                std::cin >> endDate;
+                
+                std::cout << "\n========== " << startDate << " 至 " << endDate << " 我接收的快递 ==========\n";
+                bool found = false;
+                for (const auto &pkg : packages)
+                {
+                    if (pkg->GetReceiver() == currentUser_->GetUsername())
+                    {
+                        std::string sendDate = formatDate(pkg->GetSendTime());
+                        if (sendDate >= startDate && sendDate <= endDate)
+                        {
+                            std::cout << "单号: " << pkg->GetId() << " | 寄件人: " << pkg->GetSender()
+                                      << " | 寄件时间: " << pkg->GetSendTime()
+                                      << " | 状态: " << (pkg->IsSigned() ? "已签收" : (pkg->IsWaitingSign() ? "待签收" : "待揽收")) << "\n";
+                            found = true;
+                        }
+                    }
+                }
+                if (!found)
+                    std::cout << "未找到 " << startDate << " 至 " << endDate << " 接收的快递\n";
+            }
+        }
+        else
+        {
+            std::cout << "无效选择\n";
+        }
         break;
     }
     default:
