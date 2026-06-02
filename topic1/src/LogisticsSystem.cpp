@@ -342,6 +342,7 @@ void LogisticsSystem::userRegister()
         if (findUser(username) != nullptr)
         {
             std::cout << "\n用户已存在，请重新输入\n";
+            return;
         }
         else
         {

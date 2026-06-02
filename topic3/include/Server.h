@@ -4,6 +4,7 @@
 #include <winsock2.h>
 #include <windows.h>
 #include <string>
+#include <map>
 #include "DataManager.h"
 
 class Server
@@ -15,6 +16,7 @@ private:
     CRITICAL_SECTION cs_;
     volatile bool running_;
     int nextClientId_;
+    std::map<std::string, int> onlineSessions_;
 
     Server(const Server&) = delete;
     Server& operator=(const Server&) = delete;
@@ -71,6 +73,8 @@ private:
     std::string handleCourierBalance(int courierId);
     std::string handleCourierChangePwd(int courierId, const std::string& oldPwd, const std::string& newPwd);
 
+    static std::string makeAccountKey(const std::string& username, int userType);
+    void removeOnlineSession(const std::string& key);
     static std::string formatDate(const std::string& timeStr);
 
 public:

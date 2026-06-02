@@ -44,6 +44,8 @@ bool Client::connect(const std::string& host, int port)
         return false;
     }
 
+    host_ = host;
+    port_ = port;
     connected_ = true;
     return true;
 }
@@ -57,10 +59,35 @@ void Client::disconnect()
     }
 }
 
+bool Client::reconnect(int maxRetries, int delaySec)
+{
+    disconnect();
+
+    for (int i = 1; i <= maxRetries; i++) {
+        std::cout << "  正在重连 (" << i << "/" << maxRetries << ")..." << std::endl;
+
+        if (connect(host_, port_)) {
+            std::cout << "  重连成功!" << std::endl;
+            return true;
+        }
+
+        if (i < maxRetries) {
+            Sleep(delaySec * 1000);
+        }
+    }
+
+    std::cerr << "  重连失败，请稍后重试。" << std::endl;
+    return false;
+}
+
 bool Client::sendRequest(const std::string& request)
 {
     if (!connected_) return false;
-    return send(sock_, request.c_str(), request.length(), 0) != SOCKET_ERROR;
+    if (send(sock_, request.c_str(), request.length(), 0) == SOCKET_ERROR) {
+        connected_ = false;
+        return false;
+    }
+    return true;
 }
 
 std::string Client::receiveResponse()
@@ -69,6 +96,7 @@ std::string Client::receiveResponse()
     memset(buffer, 0, sizeof(buffer));
     int bytesReceived = recv(sock_, buffer, sizeof(buffer) - 1, 0);
     if (bytesReceived <= 0) {
+        connected_ = false;
         return ERR_PREFIX + "|连接断开";
     }
     return std::string(buffer);
@@ -171,6 +199,13 @@ void Client::run()
 
     int choice;
     while (true) {
+        if (!connected_) {
+            std::cout << "\n>>> 与服务器连接断开，正在自动重连..." << std::endl;
+            if (!reconnect()) {
+                std::cout << "无法重连到服务器，程序退出。" << std::endl;
+                return;
+            }
+        }
         showMainMenu();
         if (!(std::cin >> choice)) {
             std::cin.clear();
@@ -227,6 +262,13 @@ void Client::userMenu()
 {
     int choice;
     while (true) {
+        if (!connected_) {
+            std::cout << "\n>>> 与服务器连接断开，正在自动重连..." << std::endl;
+            if (!reconnect()) {
+                std::cout << "无法重连到服务器，请稍后重新登录。" << std::endl;
+                return;
+            }
+        }
         std::cout << "\n========== 用户菜单 ==========" << std::endl;
         std::cout << "1. 查询余额" << std::endl;
         std::cout << "2. 充值" << std::endl;
@@ -308,11 +350,11 @@ void Client::userReceivePackage()
 
     printResponse(response);
 
-    std::cout << "请输入要签收的快递编号(逗号分隔, 0取消): ";
+    std::cout << "请输入要签收的快递编号(逗号分隔, 直接回车取消): ";
     std::string indices;
     std::cin >> indices;
 
-    if (indices == "0" || indices.empty()) return;
+    if (indices.empty()) return;
 
     sendRequest(buildRequest(CMD_RECEIVE_PACKAGE, {indices}));
     printResponse(receiveResponse());
@@ -411,6 +453,13 @@ void Client::adminMenu()
 {
     int choice;
     while (true) {
+        if (!connected_) {
+            std::cout << "\n>>> 与服务器连接断开，正在自动重连..." << std::endl;
+            if (!reconnect()) {
+                std::cout << "无法重连到服务器，请稍后重新登录。" << std::endl;
+                return;
+            }
+        }
         std::cout << "\n========== 管理员菜单 ==========" << std::endl;
         std::cout << "1. 查看所有用户" << std::endl;
         std::cout << "2. 查看所有快递" << std::endl;
@@ -595,6 +644,13 @@ void Client::courierMenu()
 {
     int choice;
     while (true) {
+        if (!connected_) {
+            std::cout << "\n>>> 与服务器连接断开，正在自动重连..." << std::endl;
+            if (!reconnect()) {
+                std::cout << "无法重连到服务器，请稍后重新登录。" << std::endl;
+                return;
+            }
+        }
         std::cout << "\n========== 快递员菜单 ==========" << std::endl;
         std::cout << "1. 查看我的任务" << std::endl;
         std::cout << "2. 揽收快递" << std::endl;
@@ -638,11 +694,11 @@ void Client::courierCollect()
     std::string response = receiveResponse();
     printResponse(response);
 
-    std::cout << "请输入要揽收的编号(逗号分隔, 0取消): ";
+    std::cout << "请输入要揽收的编号(逗号分隔, 直接回车取消): ";
     std::string indices;
     std::cin >> indices;
 
-    if (indices == "0" || indices.empty()) return;
+    if (indices.empty()) return;
 
     sendRequest(buildRequest(CMD_COURIER_COLLECT, {indices}));
     printResponse(receiveResponse());

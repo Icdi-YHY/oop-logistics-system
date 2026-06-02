@@ -31,13 +31,13 @@ void Server::start()
 {
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-        std::cerr << "WSAStartup failed" << std::endl;
+        std::cerr << "WSAStartup 初始化失败" << std::endl;
         return;
     }
 
     listenSocket_ = socket(AF_INET, SOCK_STREAM, 0);
     if (listenSocket_ == INVALID_SOCKET) {
-        std::cerr << "Failed to create socket" << std::endl;
+        std::cerr << "创建Socket失败" << std::endl;
         WSACleanup();
         return;
     }
@@ -51,20 +51,20 @@ void Server::start()
     serverAddr.sin_port = htons(port_);
 
     if (bind(listenSocket_, (sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR) {
-        std::cerr << "Bind failed" << std::endl;
+        std::cerr << "绑定端口失败" << std::endl;
         closesocket(listenSocket_);
         WSACleanup();
         return;
     }
 
     if (listen(listenSocket_, SOMAXCONN) == SOCKET_ERROR) {
-        std::cerr << "Listen failed" << std::endl;
+        std::cerr << "监听失败" << std::endl;
         closesocket(listenSocket_);
         WSACleanup();
         return;
     }
 
-    std::cout << "Server started on port " << port_ << std::endl;
+    std::cout << "服务器已启动，端口 " << port_ << std::endl;
     running_ = true;
 
     while (running_) {
@@ -74,7 +74,7 @@ void Server::start()
 
         if (clientSocket == INVALID_SOCKET) {
             if (running_) {
-                std::cerr << "Accept failed, error: " << WSAGetLastError() << std::endl;
+                std::cerr << "接受连接失败，错误：" << WSAGetLastError() << std::endl;
             }
             continue;
         }
@@ -111,6 +111,24 @@ void Server::stop()
     listenSocket_ = INVALID_SOCKET;
 }
 
+std::string Server::makeAccountKey(const std::string& username, int userType)
+{
+    switch (userType) {
+        case 1: return "user:" + username;
+        case 2: return "admin:" + username;
+        case 3: return "courier:" + username;
+        default: return "";
+    }
+}
+
+void Server::removeOnlineSession(const std::string& key)
+{
+    if (key.empty()) return;
+    EnterCriticalSection(&cs_);
+    onlineSessions_.erase(key);
+    LeaveCriticalSection(&cs_);
+}
+
 std::string Server::formatDate(const std::string& timeStr)
 {
     if (timeStr.empty()) return "";
@@ -144,6 +162,10 @@ void Server::handleClient(SOCKET clientSocket, int clientId)
         int bytesReceived = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
         if (bytesReceived <= 0) {
             std::cout << "  [#" << clientId << " 断开] " << sessionUsername << std::endl;
+            if (!sessionUsername.empty()) {
+                std::string key = makeAccountKey(sessionUsername, userType);
+                removeOnlineSession(key);
+            }
             break;
         }
 
@@ -199,9 +221,13 @@ std::string Server::processRequest(const std::string& request, int& userType, st
     std::string response;
     try {
         if (cmd == CMD_LOGOUT) {
+            if (!sessionUsername.empty()) {
+                std::string key = makeAccountKey(sessionUsername, userType);
+                removeOnlineSession(key);
+            }
             userType = 0;
             sessionUsername = "";
-            response = buildOkResponse("Logged out");
+            response = buildOkResponse("已退出登录");
         } else if (userType == 1) {
             response = dispatchUserCommand(cmd, params, sessionUsername);
         } else if (userType == 2) {
@@ -212,9 +238,9 @@ std::string Server::processRequest(const std::string& request, int& userType, st
             response = dispatchUnauthCommand(cmd, params, userType, sessionUsername);
         }
     } catch (const std::exception& e) {
-        response = buildErrResponse(std::string("Server error: ") + e.what());
+        response = buildErrResponse(std::string("服务器错误：") + e.what());
     } catch (...) {
-        response = buildErrResponse("Unknown server error");
+        response = buildErrResponse("未知服务器错误");
     }
 
     LeaveCriticalSection(&cs_);
@@ -238,9 +264,9 @@ std::string Server::dispatchUnauthCommand(const std::string& cmd, const std::vec
         return handleRegister(params[0], params[1], params[2], params[3], params[4]);
     }
     if (cmd == CMD_EXIT) {
-        return buildOkResponse("Goodbye");
+        return buildOkResponse("再见");
     }
-    return buildErrResponse("Please login first");
+    return buildErrResponse("请先登录");
 }
 
 std::string Server::dispatchUserCommand(const std::string& cmd, const std::vector<std::string>& params,
@@ -268,7 +294,7 @@ std::string Server::dispatchUserCommand(const std::string& cmd, const std::vecto
     if (cmd == CMD_CHANGE_PWD && params.size() >= 2)
         return handleChangePwd(sessionUsername, params[0], params[1]);
 
-    return buildErrResponse("Invalid command or insufficient permissions");
+    return buildErrResponse("无效命令或权限不足");
 }
 
 std::string Server::dispatchAdminCommand(const std::string& cmd, const std::vector<std::string>& params)
@@ -296,7 +322,7 @@ std::string Server::dispatchAdminCommand(const std::string& cmd, const std::vect
         return handleAdminQueryByTime(std::stoi(params[0]), std::stoi(params[1]),
                                       params[2], params.size() >= 4 ? params[3] : "");
 
-    return buildErrResponse("Invalid command or insufficient permissions");
+    return buildErrResponse("无效命令或权限不足");
 }
 
 std::string Server::dispatchCourierCommand(const std::string& cmd, const std::vector<std::string>& params,
@@ -313,5 +339,5 @@ std::string Server::dispatchCourierCommand(const std::string& cmd, const std::ve
     if (cmd == CMD_COURIER_CHANGE_PWD && params.size() >= 2)
         return handleCourierChangePwd(courierId, params[0], params[1]);
 
-    return buildErrResponse("Invalid command or insufficient permissions");
+    return buildErrResponse("无效命令或权限不足");
 }

@@ -9,6 +9,8 @@ class Client
 private:
     SOCKET sock_;
     bool connected_;
+    std::string host_;
+    int port_;
 
     Client(const Client&) = delete;
     Client& operator=(const Client&) = delete;
@@ -56,6 +58,7 @@ public:
     Client();
     ~Client();
     bool connect(const std::string& host, int port);
+    bool reconnect(int maxRetries = 5, int delaySec = 2);
     void disconnect();
     void run();
 };

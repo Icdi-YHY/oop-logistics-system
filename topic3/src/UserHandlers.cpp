@@ -18,6 +18,13 @@ std::string Server::handleLogin(const std::string& type, const std::string& user
         User* u = dataManager_.findUser(user);
         if (u == nullptr) return buildErrResponse("未找到用户");
         if (!u->CheckPassword(pwd)) return buildErrResponse("密码错误");
+        // 先检查是否已在线，再设置 session
+        {
+            std::string key = makeAccountKey(user, 1);
+            if (onlineSessions_.find(key) != onlineSessions_.end())
+                return buildErrResponse("该账号已在其他客户端登录");
+            onlineSessions_[key] = 0;
+        }
         userType = 1;
         sessionUsername = user;
         return buildOkResponse("用户登录成功，欢迎 " + u->GetName());
@@ -26,6 +33,13 @@ std::string Server::handleLogin(const std::string& type, const std::string& user
         Admin& admin = dataManager_.getAdmin();
         if (user != admin.GetUsername()) return buildErrResponse("未找到管理员");
         if (!admin.CheckPassword(pwd)) return buildErrResponse("密码错误");
+        // 先检查是否已在线，再设置 session
+        {
+            std::string key = makeAccountKey(user, 2);
+            if (onlineSessions_.find(key) != onlineSessions_.end())
+                return buildErrResponse("该账号已在其他客户端登录");
+            onlineSessions_[key] = 0;
+        }
         userType = 2;
         sessionUsername = user;
         return buildOkResponse("管理员登录成功");
@@ -35,6 +49,13 @@ std::string Server::handleLogin(const std::string& type, const std::string& user
         Courier* c = dataManager_.findCourier(courierId);
         if (c == nullptr) return buildErrResponse("未找到快递员");
         if (!c->CheckPassword(pwd)) return buildErrResponse("密码错误");
+        // 先检查是否已在线，再设置 session
+        {
+            std::string key = makeAccountKey(user, 3);
+            if (onlineSessions_.find(key) != onlineSessions_.end())
+                return buildErrResponse("该账号已在其他客户端登录");
+            onlineSessions_[key] = 0;
+        }
         userType = 3;
         sessionUsername = user;
         return buildOkResponse("快递员登录成功，欢迎 " + c->GetName());

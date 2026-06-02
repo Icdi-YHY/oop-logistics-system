@@ -13,7 +13,7 @@ std::string Server::handleAdminShowUsers()
     for (const auto& user : dataManager_.getUsers()) {
         data << user.GetUsername() << "|" << user.GetName() << "|"
              << user.GetPhonenum() << "|" << user.GetAddress() << "|"
-             << user.GetBalance() << "\n";
+             << std::fixed << std::setprecision(1) << user.GetBalance() << "\n";
     }
     return buildDataResponse("所有用户", data.str());
 }
