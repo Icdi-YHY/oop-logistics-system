@@ -1,6 +1,7 @@
 #include "../include/Server.h"
 #include "../include/Protocol.h"
 #include <sstream>
+#include <iomanip>
 
 using namespace Protocol;
 
@@ -15,7 +16,7 @@ std::string Server::handleCourierMyTasks(int courierId)
                  << pkg->GetReceiver() << "|" << pkg->GetDescription() << "\n";
         }
     }
-    return buildDataResponse("My tasks", data.str());
+    return buildDataResponse("我的任务", data.str());
 }
 
 std::string Server::handleCourierCollect(int courierId, const std::string& indices)
@@ -31,18 +32,18 @@ std::string Server::handleCourierCollect(int courierId, const std::string& indic
 
     if (indices.empty()) {
         if (myTasks.empty())
-            return buildOkResponse("No pending pickup tasks");
+            return buildOkResponse("暂无待取件任务");
         std::stringstream data;
         for (size_t i = 0; i < myTasks.size(); i++) {
             data << i << "|" << myTasks[i]->GetId() << "|"
                  << myTasks[i]->GetSender() << "|" << myTasks[i]->GetReceiver() << "\n";
         }
-        return buildDataResponse("Pending pickup tasks", data.str());
+        return buildDataResponse("待取件任务列表", data.str());
     }
 
     Admin& admin = dataManager_.getAdmin();
     Courier* courier = dataManager_.findCourier(courierId);
-    if (courier == nullptr) return buildErrResponse("Courier not found");
+    if (courier == nullptr) return buildErrResponse("未找到快递员");
 
     double totalCommission = 0;
     std::istringstream iss(indices);
@@ -63,8 +64,8 @@ std::string Server::handleCourierCollect(int courierId, const std::string& indic
     }
 
     std::stringstream result;
-    result << "Collected " << count << " packages, commission: " << totalCommission
-           << " yuan, balance: " << courier->GetBalance() << " yuan";
+    result << "已取件 " << count << " 个包裹，佣金：" << std::fixed << std::setprecision(1) << totalCommission
+           << " 元，余额：" << std::fixed << std::setprecision(1) << courier->GetBalance() << " 元";
     return buildOkResponse(result.str());
 }
 
@@ -73,26 +74,28 @@ std::string Server::handleCourierMyRecords(int courierId)
     std::stringstream data;
     for (const auto& pkg : dataManager_.getPackages()) {
         if (pkg->GetCourierId() == courierId) {
-            std::string st = pkg->IsSigned() ? "Signed" : (pkg->IsWaitingSign() ? "In transit" : "Pending pickup");
+            std::string st = pkg->IsSigned() ? "已签收" : (pkg->IsWaitingSign() ? "运输中" : "待取件");
             data << pkg->GetId() << "|" << pkg->GetSender() << "|"
                  << pkg->GetReceiver() << "|" << st << "\n";
         }
     }
-    return buildDataResponse("My records", data.str());
+    return buildDataResponse("我的记录", data.str());
 }
 
 std::string Server::handleCourierBalance(int courierId)
 {
     Courier* c = dataManager_.findCourier(courierId);
-    if (c == nullptr) return buildErrResponse("Courier not found");
-    return buildOkResponse("Balance: " + std::to_string(c->GetBalance()) + " yuan");
+    if (c == nullptr) return buildErrResponse("未找到快递员");
+    std::ostringstream balMsg;
+    balMsg << "余额：" << std::fixed << std::setprecision(1) << c->GetBalance() << " 元";
+    return buildOkResponse(balMsg.str());
 }
 
 std::string Server::handleCourierChangePwd(int courierId, const std::string& oldPwd, const std::string& newPwd)
 {
     Courier* c = dataManager_.findCourier(courierId);
-    if (c == nullptr) return buildErrResponse("Courier not found");
-    if (!c->CheckPassword(oldPwd)) return buildErrResponse("Wrong old password");
+    if (c == nullptr) return buildErrResponse("未找到快递员");
+    if (!c->CheckPassword(oldPwd)) return buildErrResponse("旧密码错误");
     c->SetPassword(newPwd);
-    return buildOkResponse("Password changed");
+    return buildOkResponse("密码已修改");
 }

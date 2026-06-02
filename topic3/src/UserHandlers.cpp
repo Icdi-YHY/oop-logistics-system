@@ -4,6 +4,7 @@
 #include "../include/BookPackage.h"
 #include "../include/NormalPackage.h"
 #include <sstream>
+#include <iomanip>
 #include <ctime>
 
 using namespace Protocol;
@@ -15,30 +16,30 @@ std::string Server::handleLogin(const std::string& type, const std::string& user
 {
     if (type == LOGIN_TYPE_USER) {
         User* u = dataManager_.findUser(user);
-        if (u == nullptr) return buildErrResponse("User not found");
-        if (!u->CheckPassword(pwd)) return buildErrResponse("Wrong password");
+        if (u == nullptr) return buildErrResponse("未找到用户");
+        if (!u->CheckPassword(pwd)) return buildErrResponse("密码错误");
         userType = 1;
         sessionUsername = user;
-        return buildOkResponse("User login success, welcome " + u->GetName());
+        return buildOkResponse("用户登录成功，欢迎 " + u->GetName());
     }
     else if (type == LOGIN_TYPE_ADMIN) {
         Admin& admin = dataManager_.getAdmin();
-        if (user != admin.GetUsername()) return buildErrResponse("Admin not found");
-        if (!admin.CheckPassword(pwd)) return buildErrResponse("Wrong password");
+        if (user != admin.GetUsername()) return buildErrResponse("未找到管理员");
+        if (!admin.CheckPassword(pwd)) return buildErrResponse("密码错误");
         userType = 2;
         sessionUsername = user;
-        return buildOkResponse("Admin login success");
+        return buildOkResponse("管理员登录成功");
     }
     else if (type == LOGIN_TYPE_COURIER) {
         int courierId = std::stoi(user);
         Courier* c = dataManager_.findCourier(courierId);
-        if (c == nullptr) return buildErrResponse("Courier not found");
-        if (!c->CheckPassword(pwd)) return buildErrResponse("Wrong password");
+        if (c == nullptr) return buildErrResponse("未找到快递员");
+        if (!c->CheckPassword(pwd)) return buildErrResponse("密码错误");
         userType = 3;
         sessionUsername = user;
-        return buildOkResponse("Courier login success, welcome " + c->GetName());
+        return buildOkResponse("快递员登录成功，欢迎 " + c->GetName());
     }
-    return buildErrResponse("Invalid login type");
+    return buildErrResponse("无效的登录类型");
 }
 
 // ==================== 注册处理 ====================
@@ -47,10 +48,10 @@ std::string Server::handleRegister(const std::string& username, const std::strin
                                    const std::string& phone, const std::string& pwd, const std::string& addr)
 {
     if (dataManager_.findUser(username) != nullptr)
-        return buildErrResponse("Username already exists");
+        return buildErrResponse("用户名已存在");
     User newUser(username, name, phone, pwd, addr);
     dataManager_.addUser(newUser);
-    return buildOkResponse("Registration success");
+    return buildOkResponse("注册成功");
 }
 
 // ==================== 发送快递 ====================
@@ -59,10 +60,10 @@ std::string Server::handleSendPackage(const std::string& sender, const std::stri
                                       int type, double weightOrCount, const std::string& desc)
 {
     User* recvUser = dataManager_.findUser(receiver);
-    if (recvUser == nullptr) return buildErrResponse("Receiver not found");
+    if (recvUser == nullptr) return buildErrResponse("未找到收件人");
 
     User* sendUser = dataManager_.findUser(sender);
-    if (sendUser == nullptr) return buildErrResponse("Sender not found");
+    if (sendUser == nullptr) return buildErrResponse("未找到寄件人");
 
     double price = 0;
     Package* newPackage = nullptr;
@@ -86,12 +87,14 @@ std::string Server::handleSendPackage(const std::string& sender, const std::stri
         newPackage = new NormalPackage(packageId, sender, receiver, sendTime, desc, weightOrCount);
         break;
     default:
-        return buildErrResponse("Invalid package type");
+        return buildErrResponse("无效的包裹类型");
     }
 
     if (sendUser->GetBalance() < price) {
         delete newPackage;
-        return buildErrResponse("Insufficient balance, need " + std::to_string(price) + " yuan");
+        std::ostringstream errMsg;
+        errMsg << "余额不足，需要 " << std::fixed << std::setprecision(1) << price << " 元";
+        return buildErrResponse(errMsg.str());
     }
 
     sendUser->DeductBalance(price);
@@ -99,8 +102,8 @@ std::string Server::handleSendPackage(const std::string& sender, const std::stri
     dataManager_.addPackage(newPackage);
 
     std::stringstream result;
-    result << "Package sent! ID: " << packageId << ", Fee: " << price
-           << " yuan, Balance: " << sendUser->GetBalance() << " yuan";
+    result << "包裹已发送！ID：" << packageId << "，费用：" << std::fixed << std::setprecision(1) << price
+           << " 元，余额：" << std::fixed << std::setprecision(1) << sendUser->GetBalance() << " 元";
     return buildOkResponse(result.str());
 }
 
@@ -119,14 +122,14 @@ std::string Server::handleReceivePackage(const std::string& username, const std:
 
     if (indices.empty()) {
         if (waitingIndices.empty())
-            return buildOkResponse("No packages waiting for sign");
+            return buildOkResponse("暂无待签收包裹");
         std::stringstream data;
         for (int idx : waitingIndices) {
             data << idx << "|" << packages[idx]->GetId() << "|"
                  << packages[idx]->GetSender() << "|"
                  << packages[idx]->GetDescription() << "\n";
         }
-        return buildDataResponse("Pending packages", data.str());
+        return buildDataResponse("待签收包裹", data.str());
     }
 
     time_t now = time(nullptr);
@@ -147,7 +150,7 @@ std::string Server::handleReceivePackage(const std::string& username, const std:
         }
     }
 
-    return buildOkResponse("Signed " + std::to_string(count) + " packages");
+    return buildOkResponse("已签收 " + std::to_string(count) + " 个包裹");
 }
 
 // ==================== 用户查询 ====================
@@ -158,12 +161,12 @@ std::string Server::handleQuerySent(const std::string& username)
     std::stringstream data;
     for (const auto& pkg : packages) {
         if (pkg->GetSender() == username) {
-            std::string st = pkg->IsSigned() ? "Signed" : (pkg->IsWaitingSign() ? "In transit" : "Pending pickup");
+            std::string st = pkg->IsSigned() ? "已签收" : (pkg->IsWaitingSign() ? "运输中" : "待取件");
             data << pkg->GetId() << "|" << pkg->GetReceiver() << "|"
                  << pkg->GetSendTime() << "|" << st << "\n";
         }
     }
-    return buildDataResponse("Sent packages", data.str());
+    return buildDataResponse("已寄出的包裹", data.str());
 }
 
 std::string Server::handleQueryReceived(const std::string& username)
@@ -172,25 +175,25 @@ std::string Server::handleQueryReceived(const std::string& username)
     std::stringstream data;
     for (const auto& pkg : packages) {
         if (pkg->GetReceiver() == username) {
-            std::string st = pkg->IsSigned() ? "Signed" : (pkg->IsWaitingSign() ? "In transit" : "Pending pickup");
+            std::string st = pkg->IsSigned() ? "已签收" : (pkg->IsWaitingSign() ? "运输中" : "待取件");
             data << pkg->GetId() << "|" << pkg->GetSender() << "|"
                  << pkg->GetSendTime() << "|" << st << "\n";
         }
     }
-    return buildDataResponse("Received packages", data.str());
+    return buildDataResponse("已收到的包裹", data.str());
 }
 
 std::string Server::handleQueryById(const std::string& packageId)
 {
     Package* pkg = dataManager_.findPackage(packageId);
-    if (pkg == nullptr) return buildErrResponse("Package not found");
+    if (pkg == nullptr) return buildErrResponse("未找到包裹");
 
-    std::string st = pkg->IsSigned() ? "Signed" : (pkg->IsWaitingSign() ? "In transit" : "Pending pickup");
+    std::string st = pkg->IsSigned() ? "已签收" : (pkg->IsWaitingSign() ? "运输中" : "待取件");
     std::stringstream data;
     data << pkg->GetId() << "|" << pkg->GetSender() << "|" << pkg->GetReceiver() << "|"
          << pkg->GetSendTime() << "|" << pkg->GetReceiveTime() << "|" << st << "|"
          << pkg->GetDescription();
-    return buildDataResponse("Package detail", data.str());
+    return buildDataResponse("包裹详情", data.str());
 }
 
 std::string Server::handleQueryByTime(const std::string& username, const std::string& timeType,
@@ -220,13 +223,13 @@ std::string Server::handleQueryByTime(const std::string& username, const std::st
         }
 
         if (include) {
-            std::string st = pkg->IsSigned() ? "Signed" : (pkg->IsWaitingSign() ? "In transit" : "Pending pickup");
+            std::string st = pkg->IsSigned() ? "已签收" : (pkg->IsWaitingSign() ? "运输中" : "待取件");
             data << pkg->GetId() << "|" << pkg->GetSender() << "|" << pkg->GetReceiver() << "|"
                  << pkg->GetSendTime() << "|" << st << "\n";
         }
     }
 
-    return buildDataResponse("Query result", data.str());
+    return buildDataResponse("查询结果", data.str());
 }
 
 // ==================== 余额和密码管理 ====================
@@ -234,25 +237,29 @@ std::string Server::handleQueryByTime(const std::string& username, const std::st
 std::string Server::handleBalanceQuery(const std::string& username)
 {
     User* u = dataManager_.findUser(username);
-    if (u == nullptr) return buildErrResponse("User not found");
-    return buildOkResponse("Balance: " + std::to_string(u->GetBalance()) + " yuan");
+    if (u == nullptr) return buildErrResponse("未找到用户");
+    std::ostringstream balMsg;
+    balMsg << "余额：" << std::fixed << std::setprecision(1) << u->GetBalance() << " 元";
+    return buildOkResponse(balMsg.str());
 }
 
 std::string Server::handleRecharge(const std::string& username, double amount)
 {
-    if (amount <= 0) return buildErrResponse("Amount must be positive");
+    if (amount <= 0) return buildErrResponse("充值金额必须为正数");
     User* u = dataManager_.findUser(username);
-    if (u == nullptr) return buildErrResponse("User not found");
+    if (u == nullptr) return buildErrResponse("未找到用户");
     u->Recharge(amount);
-    return buildOkResponse("Recharged " + std::to_string(amount)
-                           + " yuan, balance: " + std::to_string(u->GetBalance()) + " yuan");
+    std::ostringstream rechMsg;
+    rechMsg << "已充值 " << std::fixed << std::setprecision(1) << amount
+            << " 元，余额：" << std::fixed << std::setprecision(1) << u->GetBalance() << " 元";
+    return buildOkResponse(rechMsg.str());
 }
 
 std::string Server::handleChangePwd(const std::string& username, const std::string& oldPwd, const std::string& newPwd)
 {
     User* u = dataManager_.findUser(username);
-    if (u == nullptr) return buildErrResponse("User not found");
-    if (!u->CheckPassword(oldPwd)) return buildErrResponse("Wrong old password");
+    if (u == nullptr) return buildErrResponse("未找到用户");
+    if (!u->CheckPassword(oldPwd)) return buildErrResponse("旧密码错误");
     u->SetPassword(newPwd);
-    return buildOkResponse("Password changed");
+    return buildOkResponse("密码已修改");
 }

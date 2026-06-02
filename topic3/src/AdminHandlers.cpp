@@ -1,6 +1,7 @@
 #include "../include/Server.h"
 #include "../include/Protocol.h"
 #include <sstream>
+#include <iomanip>
 
 using namespace Protocol;
 
@@ -14,24 +15,26 @@ std::string Server::handleAdminShowUsers()
              << user.GetPhonenum() << "|" << user.GetAddress() << "|"
              << user.GetBalance() << "\n";
     }
-    return buildDataResponse("All users", data.str());
+    return buildDataResponse("所有用户", data.str());
 }
 
 std::string Server::handleAdminShowPackages()
 {
     std::stringstream data;
     for (const auto& pkg : dataManager_.getPackages()) {
-        std::string st = pkg->IsSigned() ? "Signed" : (pkg->IsWaitingSign() ? "In transit" : "Pending pickup");
+        std::string st = pkg->IsSigned() ? "已签收" : (pkg->IsWaitingSign() ? "运输中" : "待取件");
         data << pkg->GetId() << "|" << pkg->GetSender() << "|" << pkg->GetReceiver() << "|"
              << pkg->GetSendTime() << "|" << pkg->GetReceiveTime() << "|"
              << st << "|" << pkg->GetDescription() << "|" << pkg->GetCourierId() << "\n";
     }
-    return buildDataResponse("All packages", data.str());
+    return buildDataResponse("所有包裹", data.str());
 }
 
 std::string Server::handleAdminShowBalance()
 {
-    return buildOkResponse("Company balance: " + std::to_string(dataManager_.getAdmin().GetBalance()) + " yuan");
+    std::ostringstream balMsg;
+    balMsg << "公司余额：" << std::fixed << std::setprecision(1) << dataManager_.getAdmin().GetBalance() << " 元";
+    return buildOkResponse(balMsg.str());
 }
 
 std::string Server::handleAdminAddCourier(const std::string& name, const std::string& phone, const std::string& pwd)
@@ -39,15 +42,15 @@ std::string Server::handleAdminAddCourier(const std::string& name, const std::st
     int id = dataManager_.getNextCourierId();
     Courier newCourier(id, name, phone, pwd, 0.0);
     dataManager_.addCourier(newCourier);
-    return buildOkResponse("Courier added, ID: " + std::to_string(id));
+    return buildOkResponse("快递员已添加，ID：" + std::to_string(id));
 }
 
 std::string Server::handleAdminRemoveCourier(int id)
 {
     Courier* c = dataManager_.findCourier(id);
-    if (c == nullptr) return buildErrResponse("Courier not found");
+    if (c == nullptr) return buildErrResponse("未找到快递员");
     dataManager_.removeCourier(id);
-    return buildOkResponse("Courier removed");
+    return buildOkResponse("快递员已移除");
 }
 
 std::string Server::handleAdminShowCouriers()
@@ -57,38 +60,38 @@ std::string Server::handleAdminShowCouriers()
         data << courier.GetId() << "|" << courier.GetName() << "|"
              << courier.GetPhone() << "|" << courier.GetBalance() << "\n";
     }
-    return buildDataResponse("All couriers", data.str());
+    return buildDataResponse("所有快递员", data.str());
 }
 
 std::string Server::handleAdminShowCourierDetail(int id)
 {
     Courier* c = dataManager_.findCourier(id);
-    if (c == nullptr) return buildErrResponse("Courier not found");
+    if (c == nullptr) return buildErrResponse("未找到快递员");
 
     std::stringstream data;
-    data << "ID: " << c->GetId() << " | Name: " << c->GetName()
-         << " | Phone: " << c->GetPhone() << " | Balance: " << c->GetBalance() << "\n";
+    data << "ID：" << c->GetId() << " | 姓名：" << c->GetName()
+         << " | 电话：" << c->GetPhone() << " | 余额：" << c->GetBalance() << "\n";
 
     auto pkgs = dataManager_.findPackagesByCourier(id);
     for (const auto& pkg : pkgs) {
-        std::string st = pkg->IsSigned() ? "Signed" : (pkg->IsWaitingSign() ? "In transit" : "Pending pickup");
-        data << "  Package " << pkg->GetId() << " | Sender: " << pkg->GetSender()
-             << " | Receiver: " << pkg->GetReceiver() << " | Status: " << st << "\n";
+        std::string st = pkg->IsSigned() ? "已签收" : (pkg->IsWaitingSign() ? "运输中" : "待取件");
+        data << "  包裹 " << pkg->GetId() << " | 寄件人：" << pkg->GetSender()
+             << " | 收件人：" << pkg->GetReceiver() << " | 状态：" << st << "\n";
     }
-    return buildDataResponse("Courier detail", data.str());
+    return buildDataResponse("快递员详情", data.str());
 }
 
 std::string Server::handleAdminAssignCourier(const std::string& packageId, int courierId)
 {
     Package* pkg = dataManager_.findPackage(packageId);
-    if (pkg == nullptr) return buildErrResponse("Package not found");
-    if (!pkg->IsWaitingCollect()) return buildErrResponse("Package not in pending pickup state");
+    if (pkg == nullptr) return buildErrResponse("未找到包裹");
+    if (!pkg->IsWaitingCollect()) return buildErrResponse("包裹不在待取件状态");
 
     Courier* c = dataManager_.findCourier(courierId);
-    if (c == nullptr) return buildErrResponse("Courier not found");
+    if (c == nullptr) return buildErrResponse("未找到快递员");
 
     pkg->SetCourierId(courierId);
-    return buildOkResponse("Assigned package " + packageId + " to courier " + c->GetName());
+    return buildOkResponse("已将包裹 " + packageId + " 分配给快递员 " + c->GetName());
 }
 
 std::string Server::handleAdminQueryBySender(const std::string& sender)
@@ -96,12 +99,12 @@ std::string Server::handleAdminQueryBySender(const std::string& sender)
     std::stringstream data;
     for (const auto& pkg : dataManager_.getPackages()) {
         if (pkg->GetSender() == sender) {
-            std::string st = pkg->IsSigned() ? "Signed" : (pkg->IsWaitingSign() ? "In transit" : "Pending pickup");
+            std::string st = pkg->IsSigned() ? "已签收" : (pkg->IsWaitingSign() ? "运输中" : "待取件");
             data << pkg->GetId() << "|" << pkg->GetReceiver() << "|"
                  << pkg->GetSendTime() << "|" << st << "|" << pkg->GetDescription() << "\n";
         }
     }
-    return buildDataResponse("Packages by sender: " + sender, data.str());
+    return buildDataResponse("按寄件人查询：" + sender, data.str());
 }
 
 std::string Server::handleAdminQueryByReceiver(const std::string& receiver)
@@ -109,25 +112,25 @@ std::string Server::handleAdminQueryByReceiver(const std::string& receiver)
     std::stringstream data;
     for (const auto& pkg : dataManager_.getPackages()) {
         if (pkg->GetReceiver() == receiver) {
-            std::string st = pkg->IsSigned() ? "Signed" : (pkg->IsWaitingSign() ? "In transit" : "Pending pickup");
+            std::string st = pkg->IsSigned() ? "已签收" : (pkg->IsWaitingSign() ? "运输中" : "待取件");
             data << pkg->GetId() << "|" << pkg->GetSender() << "|"
                  << pkg->GetSendTime() << "|" << st << "|" << pkg->GetDescription() << "\n";
         }
     }
-    return buildDataResponse("Packages by receiver: " + receiver, data.str());
+    return buildDataResponse("按收件人查询：" + receiver, data.str());
 }
 
 std::string Server::handleAdminQueryById(const std::string& id)
 {
     Package* pkg = dataManager_.findPackage(id);
-    if (pkg == nullptr) return buildErrResponse("Package not found");
+    if (pkg == nullptr) return buildErrResponse("未找到包裹");
 
-    std::string st = pkg->IsSigned() ? "Signed" : (pkg->IsWaitingSign() ? "In transit" : "Pending pickup");
+    std::string st = pkg->IsSigned() ? "已签收" : (pkg->IsWaitingSign() ? "运输中" : "待取件");
     std::stringstream data;
     data << pkg->GetId() << "|" << pkg->GetSender() << "|" << pkg->GetReceiver() << "|"
          << pkg->GetSendTime() << "|" << pkg->GetReceiveTime() << "|" << st << "|"
          << pkg->GetDescription() << "|" << pkg->GetCourierId();
-    return buildDataResponse("Package detail", data.str());
+    return buildDataResponse("包裹详情", data.str());
 }
 
 std::string Server::handleAdminQueryByTime(int timeType, int dateType,
@@ -155,10 +158,10 @@ std::string Server::handleAdminQueryByTime(int timeType, int dateType,
         }
 
         if (include) {
-            std::string st = pkg->IsSigned() ? "Signed" : (pkg->IsWaitingSign() ? "In transit" : "Pending pickup");
+            std::string st = pkg->IsSigned() ? "已签收" : (pkg->IsWaitingSign() ? "运输中" : "待取件");
             data << pkg->GetId() << "|" << pkg->GetSender() << "|" << pkg->GetReceiver() << "|"
                  << pkg->GetSendTime() << "|" << pkg->GetReceiveTime() << "|" << st << "\n";
         }
     }
-    return buildDataResponse("Query result", data.str());
+    return buildDataResponse("查询结果", data.str());
 }
