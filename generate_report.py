@@ -564,6 +564,6 @@ add_code('start server/server.exe')
 add_code('start client/client.exe   # 可启动多个客户端')
 
 # ========== 保存文件 ==========
-output_path = r'C:\Code\oop-logistics-system\docs\实验报告.docx'
+output_path = r'C:\Code\courses\object-oriented-programming\oop-logistics-system\docs\实验报告.docx'
 doc.save(output_path)
 print(f'实验报告已生成: {output_path}')
